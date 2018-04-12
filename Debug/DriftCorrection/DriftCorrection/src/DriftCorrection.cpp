@@ -69,11 +69,11 @@ void loop() {
     }
     else
     {
-      if(gyro.getAngularDisplacement()>currentAngularDisplacement)
+      if(gyro.getAngularDisplacement()>currentAngularDisplacement && gyro.getAngularDisplacement() <= 180)
       {
         car.setAngle(-45);
       }
-      else if(gyro.getAngularDisplacement()<360 && gyro.getAngularDisplacement()>currentAngularDisplacement)
+      else if(gyro.getAngularDisplacement()<360 && gyro.getAngularDisplacement()>180)
       {
         car.setAngle(45);
       }
