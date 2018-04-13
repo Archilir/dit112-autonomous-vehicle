@@ -15,7 +15,7 @@ bool Parking::isParking() {
   return (parkingState != _OFF) ? true : false;
 }
 
-bool Parking::start(byte type) {
+bool Parking::start(char type) {
   if (!isParking()) {
     driver -> stop();
     driver -> setAutoControl();
@@ -30,7 +30,7 @@ bool Parking::start(byte type) {
         return false;
         break;
     }
-    
+
     return true;
   }
 

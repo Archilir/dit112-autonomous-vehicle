@@ -50,7 +50,7 @@ class Sensors
 
   private:
     Car *car;
-    const byte _TRIGGER_PIN_FR =  5,
+    const char _TRIGGER_PIN_FR =  5,
                _TRIGGER_PIN_BR =  6,
                _TRIGGER_PIN_BB = 44,
                _ECHO_PIN_FR    =  4,
@@ -67,14 +67,14 @@ class Parking
     Parking();
     enum States { _OFF, _PARALLEL };
     void begin(Driver*, Sensors*);
-    bool start(byte);
+    bool start(char);
     void stop();
     void monitor();
     bool isParking();
   private:
     Driver *driver;
     Sensors *sensors;
-    byte parkingState = _OFF;
+    char parkingState = _OFF;
     void parallel();
 };
 
