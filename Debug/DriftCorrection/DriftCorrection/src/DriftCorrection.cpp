@@ -14,16 +14,16 @@ const int rDegrees = 75; //degrees to turn right
 int carSpeed = 1.5;
 int carAngle = 75;
 
-int currentAngularDisplacement;
+unsigned int currentAngularDisplacement;
 bool onCourse = false;
 String debug;
 
 void setup() {
   // put your setup code here, to run once:
   Serial3.begin(9600);
-
-  gyro.attach();
   Serial.begin(9600);
+  gyro.attach();
+
   delay(1500);
   gyro.begin(60);
 
@@ -42,7 +42,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   gyro.update();
   car.updateMotors();
-  Serial.println(gyro.getAngularDisplacement());
+  //Serial.println(gyro.getAngularDisplacement());
 
   if(car.getAngle() == 0 && !onCourse)
   {
@@ -60,10 +60,12 @@ void loop() {
 
       if(gyro.getAngularDisplacement()>currentAngularDisplacement)
       {
+        Serial.println("Adjusting towards the left");
         car.setAngle(-45);
       }
       else if(gyro.getAngularDisplacement()<currentAngularDisplacement)
       {
+        Serial.println("Adjusting towards the right");
         car.setAngle(45);
       }
     }
@@ -71,10 +73,12 @@ void loop() {
     {
       if(gyro.getAngularDisplacement()>currentAngularDisplacement && gyro.getAngularDisplacement() <= 180)
       {
+        Serial.println("Adjusting towards the left");
         car.setAngle(-45);
       }
       else if(gyro.getAngularDisplacement()<360 && gyro.getAngularDisplacement()>180)
       {
+        Serial.println("Adjusting towards the right, taking ADisplacement overflow into consiteration");
         car.setAngle(45);
       }
     }
