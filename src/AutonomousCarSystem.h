@@ -2,49 +2,47 @@
 #define AutonomousCarSystem_h
 #include <Smartcar.h>
 
-class DriveController
+class Driver
 {
   public:
-    DriveController();
-    void begin(Car&);
+    Driver();
+    bool isMoving();
+    bool isAuto();
+    bool isManual();
+
+    void setAutoControl();
+    void setManualControl();
+
+    void begin(Car*);
     void update();
-    void drive();
-    void reverse();
+    void setSpeed(int);
+    void setAngle(int);
+    int getAngle();
+    int getSpeed();
+
+    void drive(float);
+    // Drive functions
+    void driveSlow();
+    void driveAverage();
+    void driveFast();
+    // Reverse functions
+    void reverseSlow();
+    void reverseAverage();
+    void reverseFast();
+    // Stop
     void stop();
   private:
     Car *car;
-    const float _MIN_CRUISE_CONTROL_SPEED = 0.2;
-    bool debugDriveController = false;
-    void init();
-    void debug(String);
+    const float _MIN_CRUISE_SPEED = 0.3,
+                _AVG_CRUISE_SPEED = 1.0,
+                _MAX_CRUISE_SPEED = 2.5;
 };
 
-class ParallelParking
+class Sensors
 {
   public:
-    ParallelParking();
-    void begin(DriveController&);
-    void stop();
-  private:
-    DriveController *driveController;
-};
-
-class RemoteControl
-{
-  public:
-    RemoteControl();
-    void listen();
-    void begin(DriveController&);
-  private:
-    void init();
-    DriveController *driveController;
-};
-
-class SensorBridge
-{
-  public:
-    SensorBridge();
-    void begin(Car&);
+    Sensors();
+    void begin(Car*);
     void update();
     void debug();
     long getOdometerLeftDistance();
@@ -60,7 +58,46 @@ class SensorBridge
                _ECHO_PIN_BB    = 42,
                _ODOMETER_PIN_L =  2,
                _ODOMETER_PIN_R =  3;
-    void init();
+};
+
+
+class Parking
+{
+  public:
+    Parking();
+    enum States { _OFF, _PARALLEL };
+    void begin(Driver*, Sensors*);
+    bool start(byte);
+    void stop();
+    void monitor();
+    bool isParking();
+  private:
+    Driver *driver;
+    Sensors *sensors;
+    byte parkingState = _OFF;
+    void parallel();
+};
+
+class RemoteControl
+{
+  public:
+    RemoteControl();
+    void listen();
+    void begin(Driver*, Parking*);
+  private:
+    Driver  *driver;
+    Parking *parking;
+    unsigned long timeoutCounter;
+    bool timeoutLock;
+    enum {
+      _PARKING = 'p',
+      _MANUAL  = 'm',
+      _FORWARD = 'w',
+      _REVERSE = 's',
+      _LEFT    = 'a',
+      _RIGHT   = 'd'
+    };
+    void manualControl(char);
 };
 
 #endif

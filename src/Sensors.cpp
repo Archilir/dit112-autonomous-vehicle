@@ -6,18 +6,13 @@ Odometer odometerLeft(188), odometerRight(188);
 Gyroscope gyro(25);
 
 // Constructor
-SensorBridge::SensorBridge()
+Sensors::Sensors()
 {
 
 }
 
-void SensorBridge::begin(Car& newCar) {
-  car = &newCar;
-  init();
-}
-
-void SensorBridge::init()
-{
+void Sensors::begin(Car* reference) {
+  car = reference;
   sonicBB.attach(_TRIGGER_PIN_FR, _ECHO_PIN_FR); //trigger pin, echo pin
   sonicBR.attach(_TRIGGER_PIN_BR, _ECHO_PIN_BR); //trigger pin, echo pin
   sonicFR.attach(_TRIGGER_PIN_BB, _ECHO_PIN_BB); //trigger pin, echo pin
@@ -33,19 +28,19 @@ void SensorBridge::init()
 
 // GETTERS
 
-long SensorBridge::getOdometerLeftDistance() {
+long Sensors::getOdometerLeftDistance() {
   return odometerLeft.getDistance();
 }
 
-long SensorBridge::getOdometerRightDistance() {
+long Sensors::getOdometerRightDistance() {
   return odometerRight.getDistance();
 }
 
-void SensorBridge::update() {
+void Sensors::update() {
   gyro.update();
 }
 
-void SensorBridge::debug() {
+void Sensors::debug() {
   String sensorData = "FR, BR, BB, oL, oR, gyro: ";
   sensorData += sonicFR.getDistance();
   sensorData += "\t";
