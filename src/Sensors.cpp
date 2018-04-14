@@ -55,3 +55,63 @@ void Sensors::debug() {
   sensorData += gyro.getAngularDisplacement();
   Serial.println(sensorData);
 }
+
+void Sensors::enableObstacleMonitor() {
+  obstacleMonitorState = true;
+}
+
+void Sensors::disableObstacleMonitor() {
+  obstacleMonitorState = false;
+}
+
+bool Sensors::obstacleMonitorEnabled() {
+  return obstacleMonitorState;
+}
+
+void Sensors::startObstacleMonitor() {
+  enableObstacleMonitor();
+  lastDepth = sonicFR.getMedianDistance();
+  minDepth = (lastDepth == 0) ? 70 : lastDepth;
+  startPos = odometerLeft.getDistance();
+  lastEndPos = startPos;
+}
+
+void Sensors::stopObstacleMonitor() {
+  disableObstacleMonitor();
+}
+
+bool Sensors::isObstacleUpdated() {
+  return obstacleDataUpdated;
+}
+
+int Sensors::getObstacleDistance() {
+  return obstacleDistance;
+}
+
+int Sensors::getObstacleMinDepth() {
+  return obstacleMinDepth;
+}
+
+void Sensors::obstacleMonitor() {
+  if (obstacleMonitorEnabled()) {
+    int currentDepth = sonicFR.getMedianDistance();
+    currentDepth = (currentDepth == 0) ? 70 : currentDepth;
+    endPos = odometerLeft.getDistance();
+
+
+    int lBound = -_OBSTACLE_SENSITIVITY_THRESHOLD + lastDepth,
+        rBound =  _OBSTACLE_SENSITIVITY_THRESHOLD + lastDepth;
+    lBound = (lBound < 0) ? 0 : lBound;
+
+    if (currentDepth <= lBound || currentDepth >= rBound) {
+      obstacleDistance = lastEndPos - startPos;
+      obstacleMinDepth = minDepth;
+      startPos = endPos;
+      obstacleDataUpdated = true;
+      minDepth = (currentDepth == 0) ? 70 : currentDepth;
+    }
+      lastEndPos = endPos;
+      minDepth   = (currentDepth < minDepth) ? currentDepth : minDepth;
+      lastDepth = currentDepth;
+  }
+}

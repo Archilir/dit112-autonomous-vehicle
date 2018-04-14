@@ -29,6 +29,8 @@ class Driver
     void reverseSlow();
     void reverseAverage();
     void reverseFast();
+
+    void go(int);
     // Stop
     void stop();
   private:
@@ -47,9 +49,34 @@ class Sensors
     void debug();
     long getOdometerLeftDistance();
     long getOdometerRightDistance();
+    void startObstacleMonitor();
+    void stopObstacleMonitor();
+    void obstacleMonitor();
+    bool obstacleMonitorEnabled();
+
+    int  getObstacleMinDepth();
+    int  getObstacleDistance();
+    bool isObstacleUpdated();
+
+    bool obstacleDataUpdated = false;
 
   private:
     Car *car;
+
+    const char _OBSTACLE_SENSITIVITY_THRESHOLD = 3;
+    bool obstacleMonitorState = false;
+
+    int startPos = -1,
+        lastEndPos,
+        lastDepth,
+        endPos,
+        minDepth;
+
+    int obstacleDistance,
+        obstacleMinDepth;
+
+    void enableObstacleMonitor();
+    void disableObstacleMonitor();
     const char _TRIGGER_PIN_FR =  5,
                _TRIGGER_PIN_BR =  6,
                _TRIGGER_PIN_BB = 44,
@@ -72,6 +99,7 @@ class Parking
     void monitor();
     bool isParking();
   private:
+    bool targetFound = false;
     Driver *driver;
     Sensors *sensors;
     char parkingState = _OFF;

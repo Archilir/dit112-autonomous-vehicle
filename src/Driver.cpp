@@ -29,11 +29,21 @@ void Driver::update() {
     car -> updateMotors();
 }
 
-void Driver::setManualControl() { car -> disableCruiseControl(); }
-void Driver::setAutoControl()   { car -> enableCruiseControl();  }
+void Driver::setManualControl() {
+  stop();
+  car -> disableCruiseControl();
+}
+void Driver::setAutoControl()   {
+  stop();
+  car -> enableCruiseControl();
+}
 
 void Driver::stop() {
   car -> stop();
+}
+
+void Driver::go(int cm) {
+  car -> go(cm);
 }
 
 void Driver::setSpeed(int speed) { car -> setSpeed(speed); }

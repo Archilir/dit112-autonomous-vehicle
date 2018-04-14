@@ -25,11 +25,6 @@ void RemoteControl::listen() {
             parking -> start(parking -> _PARALLEL);
         break;
 
-      case _MANUAL:
-        if (parking -> isParking())
-            parking -> stop();
-        break;
-
       case _FORWARD: case _REVERSE: case _LEFT: case _RIGHT:
         if (parking -> isParking()) // overrides
           parking -> stop();
@@ -51,6 +46,8 @@ void RemoteControl::listen() {
   }
 
 void RemoteControl::manualControl(char command) {
+  if(driver -> isAuto())
+    driver -> setManualControl();
   switch (command) {
     case _FORWARD:
       driver -> drive(45);

@@ -17,8 +17,8 @@ bool Parking::isParking() {
 
 bool Parking::start(char type) {
   if (!isParking()) {
-    driver -> stop();
-    driver -> setAutoControl();
+    driver  -> setAutoControl();
+    sensors -> startObstacleMonitor();
     switch (type) {
       case _PARALLEL:
         parkingState = _PARALLEL;
@@ -39,8 +39,8 @@ bool Parking::start(char type) {
 
 void Parking::stop() {
   parkingState = _OFF;
+  sensors -> stopObstacleMonitor();
   driver -> setManualControl();
-  driver -> stop();
 }
 
 void Parking::monitor() {
@@ -57,5 +57,20 @@ void Parking::monitor() {
 }
 
 void Parking::parallel() {
+  if (!targetFound) {
+    if (sensors -> isObstacleUpdated()) {
+        sensors -> obstacleDataUpdated = false;
+        if (sensors -> getObstacleDistance() >= 40 &&
+            sensors -> getObstacleMinDepth() >  10) {
 
+            sensors -> stopObstacleMonitor();
+            targetFound = true;
+        }
+    }
+  } else {
+    driver -> go(15);
+    targetFound = false;
+    stop();
+
+  }
 }
