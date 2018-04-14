@@ -2,10 +2,36 @@
 #define AutonomousCarSystem_h
 #include <Smartcar.h>
 
+class Sensors
+{
+  public:
+    Sensors();
+    void begin(Car*);
+    void update();
+    void debug();
+    long getOdometerLeftDistance();
+    long getOdometerRightDistance();
+    long getAngularDisplacement();
+
+  private:
+    Car *car;
+    const byte _TRIGGER_PIN_FR =  5,
+               _TRIGGER_PIN_BR =  6,
+               _TRIGGER_PIN_BB = 44,
+               _ECHO_PIN_FR    =  4,
+               _ECHO_PIN_BR    =  7,
+               _ECHO_PIN_BB    = 42,
+               _ODOMETER_PIN_L =  2,
+               _ODOMETER_PIN_R =  3;
+};
+
+
 class Driver
 {
   public:
     Driver();
+    bool isTurning();
+    void setTurning(bool);
     bool isMoving();
     bool isAuto();
     bool isManual();
@@ -13,7 +39,7 @@ class Driver
     void setAutoControl();
     void setManualControl();
 
-    void begin(Car*);
+    void begin(Car*, Sensors*);
     void update();
     void setSpeed(int);
     void setAngle(int);
@@ -31,33 +57,20 @@ class Driver
     void reverseFast();
     // Stop
     void stop();
+    //Drift correction
+    void driftCorrect();
+    void clearDriftCorrectData();
   private:
     Car *car;
+    Sensors *sensor;
+    unsigned int initialDisplacement;
+    unsigned int dRight;
+    unsigned int dLeft;
+    bool onCourse = false;
+    bool turningStatus;
     const float _MIN_CRUISE_SPEED = 0.3,
                 _AVG_CRUISE_SPEED = 1.0,
                 _MAX_CRUISE_SPEED = 2.5;
-};
-
-class Sensors
-{
-  public:
-    Sensors();
-    void begin(Car*);
-    void update();
-    void debug();
-    long getOdometerLeftDistance();
-    long getOdometerRightDistance();
-
-  private:
-    Car *car;
-    const byte _TRIGGER_PIN_FR =  5,
-               _TRIGGER_PIN_BR =  6,
-               _TRIGGER_PIN_BB = 44,
-               _ECHO_PIN_FR    =  4,
-               _ECHO_PIN_BR    =  7,
-               _ECHO_PIN_BB    = 42,
-               _ODOMETER_PIN_L =  2,
-               _ODOMETER_PIN_R =  3;
 };
 
 

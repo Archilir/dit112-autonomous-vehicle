@@ -44,19 +44,19 @@ void loop() {
   // put your main code here, to run repeatedly:
   gyro.update();
   car.updateMotors();
-  Serial.println(gyro.getAngularDisplacement());
+  //Serial.println(gyro.getAngularDisplacement());
 
   if(car.getAngle() == 0 && !onCourse)
   {
     onCourse = true;
     initialDisplacement = gyro.getAngularDisplacement();
-    debug = "reference offset set: " + initialDisplacement;
-    Serial.println(debug);
+    //Serial.println("reference offset set: ");
+    //Serial.print(initialDisplacement);
   }
 
   else if(car.getAngle()==0 && initialDisplacement != gyro.getAngularDisplacement())
   {
-    Serial.println("Drifting detected, correcting..");
+    //Serial.println("Drifting detected, correcting..");
     if(initialDisplacement>gyro.getAngularDisplacement())
     {
       dRight = gyro.getAngularDisplacement() - initialDisplacement;
@@ -81,7 +81,7 @@ void loop() {
 
   else if(car.getAngle()!=0 && initialDisplacement == gyro.getAngularDisplacement())
   {
-    Serial.println("Drift corrected. Returning to previous state");
+    //Serial.println("Drift corrected. Returning to previous state");
     onCourse = true;
     car.setAngle(0);
   }

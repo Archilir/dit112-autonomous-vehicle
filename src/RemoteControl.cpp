@@ -55,21 +55,25 @@ void RemoteControl::manualControl(char command) {
     case _FORWARD:
       driver -> drive(45);
       driver -> setAngle(0);
+      driver -> setTurning(false);
       break;
 
     case _REVERSE:
       driver -> drive(-45);
       driver -> setAngle(0);
+      driver -> setTurning(false);
       break;
 
     case _LEFT:
       driver -> drive(45);
       driver -> setAngle(-75);
+      driver -> setTurning(true);
       break;
 
     case _RIGHT:
       driver -> drive(45);
       driver -> setAngle(75);
+      driver -> setTurning(true);
       break;
   }
   timeoutLock = true;

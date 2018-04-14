@@ -40,6 +40,10 @@ void Sensors::update() {
   gyro.update();
 }
 
+long Sensors::getAngularDisplacement() {
+  return gyro.getAngularDisplacement();
+}
+
 void Sensors::debug() {
   String sensorData = "FR, BR, BB, oL, oR, gyro: ";
   sensorData += sonicFR.getDistance();
