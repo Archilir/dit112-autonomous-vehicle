@@ -61,13 +61,13 @@ void Sensors::debug() {
 }
 
 long Sensors::getFRDistance(){
-  sonicFR.getDistance();
+  return sonicFR.getDistance();
 }
 
 long Sensors::getBRDistance(){
-  sonicBR.getDistance();
+  return sonicBR.getDistance();
 }
 
 long Sensors::getBBDistance(){
-  sonicB.getDistance();
+  return sonicBB.getDistance();
 }
