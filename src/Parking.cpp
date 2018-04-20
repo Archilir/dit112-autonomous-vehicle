@@ -1,5 +1,6 @@
 #include <AutonomousCarSystem.h>
 
+bool isReverseParking = false;
 // Constructor
 Parking::Parking()
 {
@@ -30,7 +31,7 @@ bool Parking::start(byte type) {
         return false;
         break;
     }
-    
+
     return true;
   }
 
@@ -58,4 +59,21 @@ void Parking::monitor() {
 
 void Parking::parallel() {
 
+}
+
+void Parking::reverseParking(){
+  int initialDisplacement = sensors -> getAngularDisplacement();
+  driver -> setAngle(45);
+  driver -> setSpeed(-30);
+
+  if(initialDisplacement - sensors -> getAngularDisplacement() == 45
+  || (360 - sensors -> getAngularDisplacement()) + initialDisplacement == 45){
+    driver -> setAngle(-45);
+    isReverseParking = true;
+  }
+  if((sensors -> getAngularDisplacement() == initialDisplacement) && isReverseParking)
+  {
+    driver -> stop();
+    isReverseParking = false;
+  }
 }

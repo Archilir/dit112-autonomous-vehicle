@@ -88,7 +88,9 @@ class Parking
     Driver *driver;
     Sensors *sensors;
     byte parkingState = _OFF;
+    bool isReverseParking;
     void parallel();
+    void reverseParking();
 };
 
 class RemoteControl
