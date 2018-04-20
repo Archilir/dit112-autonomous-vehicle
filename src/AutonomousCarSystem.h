@@ -12,6 +12,9 @@ class Sensors
     long getOdometerLeftDistance();
     long getOdometerRightDistance();
     long getAngularDisplacement();
+    long getFRDistance();
+    long getBRDistance();
+    long getBBDistance();
 
   private:
     Car *car;

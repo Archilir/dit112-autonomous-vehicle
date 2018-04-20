@@ -59,3 +59,15 @@ void Sensors::debug() {
   sensorData += gyro.getAngularDisplacement();
   Serial.println(sensorData);
 }
+
+long Sensors::getFRDistance(){
+  sonicFR.getDistance();
+}
+
+long Sensors::getBRDistance(){
+  sonicBR.getDistance();
+}
+
+long Sensors::getBBDistance(){
+  sonicB.getDistance();
+}
