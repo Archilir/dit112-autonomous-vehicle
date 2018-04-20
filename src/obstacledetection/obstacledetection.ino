@@ -16,6 +16,19 @@ void setup() {
  Serial3.begin(9600);
  car.begin();
 
+  Serial.println("Use the following to Control the car");
+  Serial.println("                 ⇧                  ");
+  Serial.println(" ↖               w               ↗  ");
+  Serial.println("  q                               e  ");
+  Serial.println("                                     ");
+  Serial.println("                                     ");
+  Serial.println("   ↺ a           x            d  ↻  ");
+  Serial.println("                                     ");
+  Serial.println("                                     ");
+  Serial.println("  z                               c  ");
+  Serial.println(" ↙                s                ↘ ");
+  Serial.println("                  ⇩                  ");
+
 }
 void loop() {
 
