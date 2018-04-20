@@ -73,6 +73,15 @@ void Parking::reverseParking(){
     driver -> setAngle(-60);
     isReverseParking = true;
   }
+  //two end cases for reverse parking: hitting initial angular displacement
+  //or finding an obstacle behind itself
+
+  if(sensors -> getBBDistance() > 0
+  && sensors -> getBBDistance() < 10
+  && isReverseParking){
+    driver -> setAngle(60);
+  }
+  
   if((sensors -> getAngularDisplacement() == initialDisplacement) && isReverseParking)
   {
     driver -> stop();
