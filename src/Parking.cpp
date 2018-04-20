@@ -63,12 +63,14 @@ void Parking::parallel() {
 
 void Parking::reverseParking(){
   int initialDisplacement = sensors -> getAngularDisplacement();
-  driver -> setAngle(45);
-  driver -> setSpeed(-30);
+  driver -> setAngle(35);
+  driver -> setSpeed(-45);
 
   if(initialDisplacement - sensors -> getAngularDisplacement() == 45
   || (360 - sensors -> getAngularDisplacement()) + initialDisplacement == 45){
-    driver -> setAngle(-45);
+    driver -> setAngle(0);
+    delay(150);
+    driver -> setAngle(-60);
     isReverseParking = true;
   }
   if((sensors -> getAngularDisplacement() == initialDisplacement) && isReverseParking)
