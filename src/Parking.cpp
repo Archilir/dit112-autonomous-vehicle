@@ -88,7 +88,14 @@ void Parking::reverseParking(){
   driver -> setSpeed(-40);
   //the above 3 statements should be executed before this method is return
   //this is just for the sake of structuring it with ilja later
-
+  if(getShortestDisplacement() <= 40 && !isReverseParking){
+    if(sensors -> getBRDistance() < 8){
+      driver -> setAngle(0);
+    }
+    else{
+      driver -> setAngle(60);
+    }
+  }
   if((getShortestDisplacement() > 40)
       && (getShortestDisplacement() < 50)
       && !isReverseParking){
@@ -110,12 +117,12 @@ void Parking::reverseParking(){
   //or finding an obstacle behind itself
 
   if(sensors -> getBBDistance() > 0
-  && sensors -> getBBDistance() < 12
+  && sensors -> getBBDistance() < 21
   && isReverseParking){
-    if(driver -> getAngle() == -60){
+    if(driver -> getAngle()< 0){
       driver -> setAngle(60);
     }
-    else if(driver -> getAngle() == 60){
+    else if(driver -> getAngle() > 60){
       driver -> setSpeed(40);
     }
   }
