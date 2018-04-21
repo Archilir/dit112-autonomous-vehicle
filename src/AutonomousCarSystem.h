@@ -92,7 +92,9 @@ class Parking
     Sensors *sensors;
     byte parkingState = _OFF;
     bool isReverseParking;
+    int initialDisplacement;
     void parallel();
+    int getShortestDisplacement();
     void reverseParking();
 };
 

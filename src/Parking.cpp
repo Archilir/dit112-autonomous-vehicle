@@ -1,6 +1,7 @@
 #include <AutonomousCarSystem.h>
 
 bool isReverseParking = false;
+int initialDisplacement;
 // Constructor
 Parking::Parking()
 {
@@ -60,16 +61,36 @@ void Parking::monitor() {
 void Parking::parallel() {
 
 }
+int Parking::getShortestDisplacement(){
+  int currentDisplacement = sensors -> getAngularDisplacement();
+  int displacement1 = initialDisplacement-currentDisplacement;
+  int displacement2 = (360-currentDisplacement) + initialDisplacement ;
 
+  if(displacement1 < 0)
+  {
+    displacement1 = -displacement1;
+  }
+
+  if(displacement1 < displacement2)
+  {
+    return displacement1;
+  }
+  else
+  {
+    return displacement2;;
+  }
+}
 void Parking::reverseParking(){
-  int initialDisplacement = sensors -> getAngularDisplacement();
+  initialDisplacement = sensors -> getAngularDisplacement();
   driver -> setAngle(35);
   driver -> setSpeed(-45);
+  //the above 3 statements should be executed before this method is return
+  //this is just for the sake of structuring it with ilja later
 
-  if(initialDisplacement - sensors -> getAngularDisplacement() == 45
-  || (360 - sensors -> getAngularDisplacement()) + initialDisplacement == 45){
+  if((initialDisplacement - sensors -> getAngularDisplacement() == 45
+  || (360 - sensors -> getAngularDisplacement()) + initialDisplacement == 45) && !isReverseParking){
     driver -> setAngle(0);
-    delay(150);
+    delay(50);
     driver -> setAngle(-60);
     isReverseParking = true;
   }
@@ -81,7 +102,7 @@ void Parking::reverseParking(){
   && isReverseParking){
     driver -> setAngle(60);
   }
-  
+
   if((sensors -> getAngularDisplacement() == initialDisplacement) && isReverseParking)
   {
     driver -> stop();
