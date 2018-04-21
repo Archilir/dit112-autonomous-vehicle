@@ -2,6 +2,8 @@
 
 bool isReverseParking = false;
 int initialDisplacement;
+int previousFront;
+int previousBack;
 // Constructor
 Parking::Parking()
 {
@@ -83,27 +85,42 @@ int Parking::getShortestDisplacement(){
 void Parking::reverseParking(){
   initialDisplacement = sensors -> getAngularDisplacement();
   driver -> setAngle(35);
-  driver -> setSpeed(-45);
+  driver -> setSpeed(-40);
   //the above 3 statements should be executed before this method is return
   //this is just for the sake of structuring it with ilja later
 
-  if((initialDisplacement - sensors -> getAngularDisplacement() == 45
-  || (360 - sensors -> getAngularDisplacement()) + initialDisplacement == 45) && !isReverseParking){
-    driver -> setAngle(0);
-    delay(50);
-    driver -> setAngle(-60);
-    isReverseParking = true;
+  if((getShortestDisplacement() > 40)
+      && (getShortestDisplacement() < 50)
+      && !isReverseParking){
+
+    previousFront = sensors -> getFRDistance();
+    previousBack = sensors -> getBRDistance();
+
+    if(previousBack< sensors -> getBRDistance() &&
+       previousFront > sensors -> getFRDistance()){
+     driver -> setAngle(0);
+    }
+
+    else{
+     driver -> setAngle(-60);
+     isReverseParking = true;
+    }
   }
   //two end cases for reverse parking: hitting initial angular displacement
   //or finding an obstacle behind itself
 
   if(sensors -> getBBDistance() > 0
-  && sensors -> getBBDistance() < 10
+  && sensors -> getBBDistance() < 12
   && isReverseParking){
-    driver -> setAngle(60);
+    if(driver -> getAngle() == -60){
+      driver -> setAngle(60);
+    }
+    else if(driver -> getAngle() == 60){
+      driver -> setSpeed(40);
+    }
   }
 
-  if((sensors -> getAngularDisplacement() == initialDisplacement) && isReverseParking)
+  if(getShortestDisplacement() < 2 && isReverseParking)
   {
     driver -> stop();
     isReverseParking = false;

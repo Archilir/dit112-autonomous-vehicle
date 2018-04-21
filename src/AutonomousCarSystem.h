@@ -93,6 +93,8 @@ class Parking
     byte parkingState = _OFF;
     bool isReverseParking;
     int initialDisplacement;
+    int previousFront;
+    int previousBack;
     void parallel();
     int getShortestDisplacement();
     void reverseParking();
