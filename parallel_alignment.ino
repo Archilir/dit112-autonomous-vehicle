@@ -33,7 +33,7 @@ void setup() {
 
 void loop() {
   debugPrint();
-  fun();
+  carAlign();
 }
 
 
@@ -101,7 +101,7 @@ void deadlock(char input) {
   }
 }
 
-void (){
+void carAlign(){
     
     int distanceFR = sonicFR.getDistance(),
         distanceBR = sonicBR.getDistance();
@@ -115,7 +115,7 @@ void (){
        if(car.getSpeed() != 30) {
         car.setSpeed(30);
        }
-       align1(distanceFR, distanceBR);
+       align(distanceFR, distanceBR);
     }
 }
 
