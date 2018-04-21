@@ -101,7 +101,7 @@ void deadlock(char input) {
   }
 }
 
-void fun(){
+void (){
     
     int distanceFR = sonicFR.getDistance(),
         distanceBR = sonicBR.getDistance();
@@ -115,12 +115,11 @@ void fun(){
        if(car.getSpeed() != 30) {
         car.setSpeed(30);
        }
-       //align1(distanceFR, distanceBR);
-       car.setAngle(45); 
+       align1(distanceFR, distanceBR);
     }
 }
 
-void align1(int distanceFR, int distanceBR) {
+void align(int distanceFR, int distanceBR) {
   
   if((distanceFR > 0 && distanceFR < 35) && (distanceBR > 0 && distanceBR < 35)){  
        if(distanceFR > distanceBR) {
