@@ -60,7 +60,7 @@ void Parking::parallel() {
   if (!targetFound) {
     if (sensors -> isObstacleUpdated()) {
         sensors -> obstacleDataUpdated = false;
-        if (sensors -> getObstacleDistance() >= 40 &&
+        if (sensors -> getObstacleDistance() >= 30 &&
             sensors -> getObstacleMinDepth() >  10) {
 
             sensors -> stopObstacleMonitor();
@@ -68,7 +68,7 @@ void Parking::parallel() {
         }
     }
   } else {
-    driver -> go(15);
+    driver -> go(12);
     targetFound = false;
     stop();
 

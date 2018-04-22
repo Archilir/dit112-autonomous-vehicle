@@ -49,9 +49,9 @@ void setup() {
 }
 
 void loop() {
-  remoteControl();
-  parking();
-  //debugSensors();
+  //remoteControl();
+  //parking();
+  debugSensors();
 }
 
 // PARALLEL PARKING

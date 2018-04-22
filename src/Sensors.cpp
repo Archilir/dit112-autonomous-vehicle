@@ -94,7 +94,7 @@ int Sensors::getObstacleMinDepth() {
 
 void Sensors::obstacleMonitor() {
   if (obstacleMonitorEnabled()) {
-    int currentDepth = sonicFR.getMedianDistance();
+    int currentDepth = sonicBR.getMedianDistance();
     currentDepth = (currentDepth == 0) ? 70 : currentDepth;
     endPos = odometerLeft.getDistance();
 
