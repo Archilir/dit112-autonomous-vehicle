@@ -71,3 +71,7 @@ long Sensors::getBRDistance(){
 long Sensors::getBBDistance(){
   return sonicBB.getDistance();
 }
+
+long Sensors::getBBMedian() {
+  return sonicBB.getMedianDistance();
+}

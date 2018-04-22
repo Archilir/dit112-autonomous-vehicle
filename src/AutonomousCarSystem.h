@@ -15,6 +15,7 @@ class Sensors
     long getFRDistance();
     long getBRDistance();
     long getBBDistance();
+    long getBBMedian();
 
   private:
     Car *car;
