@@ -4,24 +4,24 @@
 // Car instance
 Car car; 
 
+// Variables used to update the speed of the wheels when controling the car in the console
 int speedLeft;
 int speedRight;
 
-// A Variable to store the direction inputed in the console
+// A variable to store the direction inputed in the console
 String directionAndSpeed;
 
 //Front UltraSound sensor
+SR04 FrontUSSensor;
 //const int TRIGGER_PIN_FRONT = ?;
 //const int ECHO_PIN_FRONT = ?;
 
 //Back UltraSound sensor
+SR04 BackUSSensor;
 const int TRIGGER_PIN_BACK = 5;
 const int ECHO_PIN_BACK = 4;
 
-
-SR04 FrontUSSensor;
-SR04 BackUSSensor;
-
+// A variable used for the switch case for the obstacle detection
 char switchVar;
 
 
@@ -29,6 +29,7 @@ void setup() {
  Serial.begin(9600);
  Serial3.begin(9600);
  car.begin();
+ 
  //FrontUSSensor.attach(TRIGGER_PIN_FRONT, ECHO_PIN_FRONT);
   BackUSSensor.attach(TRIGGER_PIN_BACK, ECHO_PIN_BACK);
 
@@ -48,7 +49,7 @@ void setup() {
 }
 void loop() {
 
-  int frontDistance = FrontUSSensor.getDistance();
+  //int frontDistance = FrontUSSensor.getDistance();
   int backDistance = BackUSSensor.getDistance(); 
 
 if (Serial.available() > 0) {
@@ -66,7 +67,11 @@ if (Serial.available() > 0) {
   }
 
   switch (switchVar) {
- 
+    
+     case 'w':
+     
+    // TODO: add obstacle avoidance for the front sensor
+    
         car.setMotorSpeed(speedLeft, speedRight);
 
       break;
@@ -87,11 +92,15 @@ if (Serial.available() > 0) {
 
     case 'q':
 
+    // TODO: add obstacle avoidance for the front sensor
+
         car.setMotorSpeed(speedLeft, speedRight);
 
       break;
 
     case 'e':
+
+    // TODO: add obstacle avoidance for the front sensor
 
         car.setMotorSpeed(speedLeft, speedRight);
 
@@ -133,6 +142,8 @@ if (Serial.available() > 0) {
 
   switch (direction) {
 
+    // Move Forward
+
     case 'w' :
 
       speedLeft = derive();
@@ -141,11 +152,15 @@ if (Serial.available() > 0) {
       car.setMotorSpeed(derive(), derive());
       break;
 
+    // Turn in place to the left
+
     case 'a' :
 
       switchVar = 'a';     
       car.setMotorSpeed(-derive(), derive());
       break;
+
+    // Move Backwards 
 
     case 's' :
     
@@ -155,12 +170,16 @@ if (Serial.available() > 0) {
       car.setMotorSpeed(-derive(), -derive());
       break;
 
+    // Turn in place to the right
+
     case 'd' :
 
       switchVar = 'd';
       car.setMotorSpeed(derive(), -derive());
       
       break;
+
+    // Move Forward diagonally to the left
 
     case 'q' :
 
@@ -170,6 +189,8 @@ if (Serial.available() > 0) {
       car.setMotorSpeed(derive() / 2, derive());
       break;
 
+    // Move Forward diagonally to the right
+
     case 'e' : 
 
       speedLeft = derive();
@@ -178,6 +199,8 @@ if (Serial.available() > 0) {
       car.setMotorSpeed(derive(), derive() / 2);
       break;
 
+    // Move Backwards diagonally to the left
+
     case 'z' :
     
       speedLeft = -derive() / 2;
@@ -185,6 +208,8 @@ if (Serial.available() > 0) {
       switchVar = 'z';
       car.setMotorSpeed(-derive() / 2, -derive());
       break;
+
+    // // Move Backwards diagonally to the right
 
     case 'c' :
 
@@ -195,19 +220,25 @@ if (Serial.available() > 0) {
       car.setMotorSpeed(-derive(), -derive() / 2);
       break;
 
+    // stop the car
+
     case 'x' :
 
       switchVar = 'w';
       car.setMotorSpeed(0, 0);
       break;
 
+    // default case
 
     default :
+    Serial.println("Wrong command, try another command");
       break;
   }
   
   directionAndSpeed = "";
 }
+
+// a method to extract the inputed speed
 
 int derive() {
   int speed = directionAndSpeed.substring(1, 3).toInt();
