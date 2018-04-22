@@ -133,15 +133,13 @@ void Parking::reverseParking(){
  * if the car is already turning to the left, it just sends it forwards
  */
 
-  if(sensors -> getBBDistance() > 0
-  && sensors -> getBBDistance() < 21
+ long backDistance = sensors -> getBBMedian();
+
+  if(backDistance > 0
+  && backDistance < 21
   && isReverseParking){
-    if(driver -> getAngle()< 0){
       driver -> setAngle(45);
-    }
-    else if(driver -> getAngle() > 0){
       driver -> setSpeed(40);
-    }
   }
 
   /*
