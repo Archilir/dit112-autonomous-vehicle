@@ -122,7 +122,7 @@ void Parking::reverseParking(){
     }
 
     else{
-     driver -> setAngle(-45);
+     driver -> setAngle(-60);
      isReverseParking = true;
     }
   }
