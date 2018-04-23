@@ -60,6 +60,11 @@ class Sensors
 
     bool obstacleDataUpdated = false;
 
+
+    int getFRDistance();
+    int getBRDistance();
+    int getBBDistance();
+
   private:
     Car *car;
 
@@ -74,6 +79,12 @@ class Sensors
 
     int obstacleDistance,
         obstacleMinDepth;
+
+    int sonicFRDistance,
+        sonicBRDistance,
+        sonicBBDistance;
+
+    void updateUltrasonic();
 
     void enableObstacleMonitor();
     void disableObstacleMonitor();

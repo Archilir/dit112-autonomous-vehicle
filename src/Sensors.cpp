@@ -37,24 +37,22 @@ long Sensors::getOdometerRightDistance() {
 }
 
 void Sensors::update() {
-  gyro.update();
+  gyro.update();        // gyro value stored in Smartshield
+  updateUltrasonic();   // manual update and storage for synchronisity
+
 }
 
-void Sensors::debug() {
-  String sensorData = "FR, BR, BB, oL, oR, gyro: ";
-  sensorData += sonicFR.getDistance();
-  sensorData += "\t";
-  sensorData += sonicBR.getDistance();
-  sensorData += "\t";
-  sensorData += sonicBB.getDistance();
-  sensorData += "\t";
-  sensorData += odometerLeft.getDistance();
-  sensorData += "\t";
-  sensorData += odometerRight.getDistance();
-  sensorData += "\t";
-  sensorData += gyro.getAngularDisplacement();
-  Serial.println(sensorData);
+void Sensors::updateUltrasonic() {
+  // 20 milliseconds each
+  sonicFRDistance = sonicFR.getMedianDistance();
+  sonicBRDistance = sonicBR.getMedianDistance();
+  sonicBBDistance = sonicBB.getMedianDistance();
 }
+
+int Sensors::getFRDistance() { return sonicFRDistance; }
+int Sensors::getBRDistance() { return sonicBRDistance; }
+int Sensors::getBBDistance() { return sonicBBDistance; }
+
 
 void Sensors::enableObstacleMonitor() {
   obstacleMonitorState = true;
@@ -70,7 +68,7 @@ bool Sensors::obstacleMonitorEnabled() {
 
 void Sensors::startObstacleMonitor() {
   enableObstacleMonitor();
-  lastDepth = sonicFR.getMedianDistance();
+  lastDepth = sonicFRDistance;
   minDepth = (lastDepth == 0) ? 70 : lastDepth;
   startPos = odometerLeft.getDistance();
   lastEndPos = startPos;
@@ -94,7 +92,7 @@ int Sensors::getObstacleMinDepth() {
 
 void Sensors::obstacleMonitor() {
   if (obstacleMonitorEnabled()) {
-    int currentDepth = sonicFR.getMedianDistance();
+    int currentDepth = sonicFRDistance;
     currentDepth = (currentDepth == 0) ? 70 : currentDepth;
     endPos = odometerLeft.getDistance();
 
@@ -114,4 +112,20 @@ void Sensors::obstacleMonitor() {
       minDepth   = (currentDepth < minDepth) ? currentDepth : minDepth;
       lastDepth = currentDepth;
   }
+}
+
+void Sensors::debug() {
+  String sensorData = "FR, BR, BB, oL, oR, gyro: ";
+  sensorData += sonicFRDistance;
+  sensorData += "\t";
+  sensorData += sonicBRDistance;
+  sensorData += "\t";
+  sensorData += sonicBBDistance;
+  sensorData += "\t";
+  sensorData += odometerLeft.getDistance();
+  sensorData += "\t";
+  sensorData += odometerRight.getDistance();
+  sensorData += "\t";
+  sensorData += gyro.getAngularDisplacement();
+  Serial.println(sensorData);
 }
