@@ -2,53 +2,23 @@
 #define AutonomousCarSystem_h
 #include <Smartcar.h>
 
-class Driver
-{
-  public:
-    Driver();
-    bool isMoving();
-    bool isAuto();
-    bool isManual();
-
-    void setAutoControl();
-    void setManualControl();
-
-    void begin(Car*);
-    void update();
-    void setSpeed(int);
-    void setAngle(int);
-    int getAngle();
-    int getSpeed();
-
-    void drive(float);
-    // Drive functions
-    void driveSlow();
-    void driveAverage();
-    void driveFast();
-    // Reverse functions
-    void reverseSlow();
-    void reverseAverage();
-    void reverseFast();
-
-    void go(int);
-    // Stop
-    void stop();
-  private:
-    Car *car;
-    const float _MIN_CRUISE_SPEED = 0.3,
-                _AVG_CRUISE_SPEED = 1.0,
-                _MAX_CRUISE_SPEED = 2.5;
-};
-
 class Sensors
 {
   public:
     Sensors();
-    void begin(Car*);
-    void update();
-    void debug();
+
     long getOdometerLeftDistance();
     long getOdometerRightDistance();
+    long getAngularDisplacement();
+    int getFRDistance();
+    int getBRDistance();
+    int getBBDistance();
+
+    int getFRMedian();
+    int getBRMedian();
+    int getBBMedian();
+
+
     void startObstacleMonitor();
     void stopObstacleMonitor();
     void obstacleMonitor();
@@ -59,11 +29,9 @@ class Sensors
     bool isObstacleUpdated();
 
     bool obstacleDataUpdated = false;
-
-
-    int getFRDistance();
-    int getBRDistance();
-    int getBBDistance();
+    void debug();
+    void begin(Car*);
+    void update();
 
   private:
     Car *car;
@@ -99,6 +67,56 @@ class Sensors
 };
 
 
+class Driver
+{
+  public:
+    Driver();
+    bool isTurning();
+    void setTurning(bool);
+    bool isMoving();
+    bool isAuto();
+    bool isManual();
+
+    void setAutoControl();
+    void setManualControl();
+
+    void begin(Car*, Sensors*);
+    void update();
+    void setSpeed(int);
+    void setAngle(int);
+    int getAngle();
+    int getSpeed();
+
+    void drive(float);
+    // Drive functions
+    void driveSlow();
+    void driveAverage();
+    void driveFast();
+    // Reverse functions
+    void reverseSlow();
+    void reverseAverage();
+    void reverseFast();
+
+    void go(int);
+    // Stop
+    void stop();
+    //Drift correction
+    void driftCorrect();
+    void clearDriftCorrectData();
+  private:
+    Car *car;
+    Sensors *sensor;
+    unsigned int initialDisplacement;
+    unsigned int dRight;
+    unsigned int dLeft;
+    bool onCourse = false;
+    bool turningStatus;
+    const float _MIN_CRUISE_SPEED = 0.3,
+                _AVG_CRUISE_SPEED = 1.0,
+                _MAX_CRUISE_SPEED = 2.5;
+};
+
+
 class Parking
 {
   public:
@@ -113,8 +131,14 @@ class Parking
     bool targetFound = false;
     Driver *driver;
     Sensors *sensors;
-    char parkingState = _OFF;
+    byte parkingState = _OFF;
+    bool isReverseParking;
+    int initialDisplacement;
+    int previousFront;
+    int previousBack;
     void parallel();
+    int getShortestDisplacement();
+    void reverseParking();
 };
 
 class RemoteControl

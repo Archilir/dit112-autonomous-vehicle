@@ -3,7 +3,7 @@
 SR04 sonicFR, sonicBR, sonicBB;
 Odometer odometerLeft(188), odometerRight(188);
 
-Gyroscope gyro(25);
+Gyroscope gyro(22);
 
 // Constructor
 Sensors::Sensors()
@@ -44,14 +44,17 @@ void Sensors::update() {
 
 void Sensors::updateUltrasonic() {
   // 20 milliseconds each
-  sonicFRDistance = sonicFR.getMedianDistance();
-  sonicBRDistance = sonicBR.getMedianDistance();
-  sonicBBDistance = sonicBB.getMedianDistance();
+  //sonicFRDistance = sonicFR.getMedianDistance();
+  //sonicBRDistance = sonicBR.getMedianDistance();
+  //sonicBBDistance = sonicBB.getMedianDistance();
 }
 
-int Sensors::getFRDistance() { return sonicFRDistance; }
-int Sensors::getBRDistance() { return sonicBRDistance; }
-int Sensors::getBBDistance() { return sonicBBDistance; }
+int Sensors::getFRDistance() { return sonicFR.getDistance(); }
+int Sensors::getBRDistance() { return sonicBR.getDistance(); }
+int Sensors::getBBDistance() { return sonicBB.getDistance(); }
+int Sensors::getFRMedian()   { return sonicFR.getMedianDistance(); }
+int Sensors::getBRMedian()   { return sonicBR.getMedianDistance(); }
+int Sensors::getBBMedian()   { return sonicBB.getMedianDistance(); }
 
 
 void Sensors::enableObstacleMonitor() {
@@ -68,7 +71,7 @@ bool Sensors::obstacleMonitorEnabled() {
 
 void Sensors::startObstacleMonitor() {
   enableObstacleMonitor();
-  lastDepth = sonicFRDistance;
+  lastDepth = getFRMedian();
   minDepth = (lastDepth == 0) ? 70 : lastDepth;
   startPos = odometerLeft.getDistance();
   lastEndPos = startPos;
@@ -92,7 +95,7 @@ int Sensors::getObstacleMinDepth() {
 
 void Sensors::obstacleMonitor() {
   if (obstacleMonitorEnabled()) {
-    int currentDepth = sonicFRDistance;
+    int currentDepth = getFRMedian();
     currentDepth = (currentDepth == 0) ? 70 : currentDepth;
     endPos = odometerLeft.getDistance();
 
@@ -112,6 +115,10 @@ void Sensors::obstacleMonitor() {
       minDepth   = (currentDepth < minDepth) ? currentDepth : minDepth;
       lastDepth = currentDepth;
   }
+}
+
+long Sensors::getAngularDisplacement() {
+  return gyro.getAngularDisplacement();
 }
 
 void Sensors::debug() {
