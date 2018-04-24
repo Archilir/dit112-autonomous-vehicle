@@ -23,6 +23,7 @@ void RemoteControl::listen() {
             parking -> stop();
         else
             parking -> start(parking -> _PARALLEL);
+        Serial.println("_PARKING");
         break;
 
       case _FORWARD: case _REVERSE: case _LEFT: case _RIGHT:
@@ -52,21 +53,25 @@ void RemoteControl::manualControl(char command) {
     case _FORWARD:
       driver -> drive(45);
       driver -> setAngle(0);
+      driver -> setTurning(false);
       break;
 
     case _REVERSE:
       driver -> drive(-45);
       driver -> setAngle(0);
+      driver -> setTurning(false);
       break;
 
     case _LEFT:
       driver -> drive(45);
       driver -> setAngle(-75);
+      driver -> setTurning(true);
       break;
 
     case _RIGHT:
       driver -> drive(45);
       driver -> setAngle(75);
+      driver -> setTurning(true);
       break;
   }
   timeoutLock = true;

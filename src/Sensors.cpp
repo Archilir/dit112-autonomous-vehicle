@@ -3,7 +3,7 @@
 SR04 sonicFR, sonicBR, sonicBB;
 Odometer odometerLeft(188), odometerRight(188);
 
-Gyroscope gyro(25);
+Gyroscope gyro(22);
 
 // Constructor
 Sensors::Sensors()
@@ -37,24 +37,25 @@ long Sensors::getOdometerRightDistance() {
 }
 
 void Sensors::update() {
-  gyro.update();
+  gyro.update();        // gyro value stored in Smartshield
+  updateUltrasonic();   // manual update and storage for synchronisity
+
 }
 
-void Sensors::debug() {
-  String sensorData = "FR, BR, BB, oL, oR, gyro: ";
-  sensorData += sonicFR.getDistance();
-  sensorData += "\t";
-  sensorData += sonicBR.getDistance();
-  sensorData += "\t";
-  sensorData += sonicBB.getDistance();
-  sensorData += "\t";
-  sensorData += odometerLeft.getDistance();
-  sensorData += "\t";
-  sensorData += odometerRight.getDistance();
-  sensorData += "\t";
-  sensorData += gyro.getAngularDisplacement();
-  Serial.println(sensorData);
+void Sensors::updateUltrasonic() {
+  // 20 milliseconds each
+  //sonicFRDistance = sonicFR.getMedianDistance();
+  //sonicBRDistance = sonicBR.getMedianDistance();
+  //sonicBBDistance = sonicBB.getMedianDistance();
 }
+
+int Sensors::getFRDistance() { return sonicFR.getDistance(); }
+int Sensors::getBRDistance() { return sonicBR.getDistance(); }
+int Sensors::getBBDistance() { return sonicBB.getDistance(); }
+int Sensors::getFRMedian()   { return sonicFR.getMedianDistance(); }
+int Sensors::getBRMedian()   { return sonicBR.getMedianDistance(); }
+int Sensors::getBBMedian()   { return sonicBB.getMedianDistance(); }
+
 
 void Sensors::enableObstacleMonitor() {
   obstacleMonitorState = true;
@@ -70,7 +71,7 @@ bool Sensors::obstacleMonitorEnabled() {
 
 void Sensors::startObstacleMonitor() {
   enableObstacleMonitor();
-  lastDepth = sonicFR.getMedianDistance();
+  lastDepth = getFRMedian();
   minDepth = (lastDepth == 0) ? 70 : lastDepth;
   startPos = odometerLeft.getDistance();
   lastEndPos = startPos;
@@ -94,7 +95,7 @@ int Sensors::getObstacleMinDepth() {
 
 void Sensors::obstacleMonitor() {
   if (obstacleMonitorEnabled()) {
-    int currentDepth = sonicBR.getMedianDistance();
+    int currentDepth = getFRMedian();
     currentDepth = (currentDepth == 0) ? 70 : currentDepth;
     endPos = odometerLeft.getDistance();
 
@@ -114,4 +115,24 @@ void Sensors::obstacleMonitor() {
       minDepth   = (currentDepth < minDepth) ? currentDepth : minDepth;
       lastDepth = currentDepth;
   }
+}
+
+long Sensors::getAngularDisplacement() {
+  return gyro.getAngularDisplacement();
+}
+
+void Sensors::debug() {
+  String sensorData = "FR, BR, BB, oL, oR, gyro: ";
+  sensorData += sonicFRDistance;
+  sensorData += "\t";
+  sensorData += sonicBRDistance;
+  sensorData += "\t";
+  sensorData += sonicBBDistance;
+  sensorData += "\t";
+  sensorData += odometerLeft.getDistance();
+  sensorData += "\t";
+  sensorData += odometerRight.getDistance();
+  sensorData += "\t";
+  sensorData += gyro.getAngularDisplacement();
+  Serial.println(sensorData);
 }

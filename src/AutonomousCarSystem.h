@@ -2,10 +2,77 @@
 #define AutonomousCarSystem_h
 #include <Smartcar.h>
 
+class Sensors
+{
+  public:
+    Sensors();
+
+    long getOdometerLeftDistance();
+    long getOdometerRightDistance();
+    long getAngularDisplacement();
+    int getFRDistance();
+    int getBRDistance();
+    int getBBDistance();
+
+    int getFRMedian();
+    int getBRMedian();
+    int getBBMedian();
+
+
+    void startObstacleMonitor();
+    void stopObstacleMonitor();
+    void obstacleMonitor();
+    bool obstacleMonitorEnabled();
+
+    int  getObstacleMinDepth();
+    int  getObstacleDistance();
+    bool isObstacleUpdated();
+
+    bool obstacleDataUpdated = false;
+    void debug();
+    void begin(Car*);
+    void update();
+
+  private:
+    Car *car;
+
+    const char _OBSTACLE_SENSITIVITY_THRESHOLD = 3;
+    bool obstacleMonitorState = false;
+
+    int startPos = -1,
+        lastEndPos,
+        lastDepth,
+        endPos,
+        minDepth;
+
+    int obstacleDistance,
+        obstacleMinDepth;
+
+    int sonicFRDistance,
+        sonicBRDistance,
+        sonicBBDistance;
+
+    void updateUltrasonic();
+
+    void enableObstacleMonitor();
+    void disableObstacleMonitor();
+    const char _TRIGGER_PIN_FR =  5,
+               _TRIGGER_PIN_BR =  6,
+               _TRIGGER_PIN_BB = 44,
+               _ECHO_PIN_FR    =  4,
+               _ECHO_PIN_BR    =  7,
+               _ECHO_PIN_BB    = 42,
+               _ODOMETER_PIN_L =  2,
+               _ODOMETER_PIN_R =  3;
+};
+
+
 class Driver
 {
   public:
     Driver();
+    bool isTurning();
+    void setTurning(bool);
     bool isMoving();
     bool isAuto();
     bool isManual();
@@ -13,7 +80,7 @@ class Driver
     void setAutoControl();
     void setManualControl();
 
-    void begin(Car*);
+    void begin(Car*, Sensors*);
     void update();
     void setSpeed(int);
     void setAngle(int);
@@ -33,58 +100,20 @@ class Driver
     void go(int);
     // Stop
     void stop();
+    //Drift correction
+    void driftCorrect();
+    void clearDriftCorrectData();
   private:
     Car *car;
+    Sensors *sensor;
+    unsigned int initialDisplacement;
+    unsigned int dRight;
+    unsigned int dLeft;
+    bool onCourse = false;
+    bool turningStatus;
     const float _MIN_CRUISE_SPEED = 0.3,
                 _AVG_CRUISE_SPEED = 1.0,
                 _MAX_CRUISE_SPEED = 2.5;
-};
-
-class Sensors
-{
-  public:
-    Sensors();
-    void begin(Car*);
-    void update();
-    void debug();
-    long getOdometerLeftDistance();
-    long getOdometerRightDistance();
-    void startObstacleMonitor();
-    void stopObstacleMonitor();
-    void obstacleMonitor();
-    bool obstacleMonitorEnabled();
-
-    int  getObstacleMinDepth();
-    int  getObstacleDistance();
-    bool isObstacleUpdated();
-
-    bool obstacleDataUpdated = false;
-
-  private:
-    Car *car;
-
-    const char _OBSTACLE_SENSITIVITY_THRESHOLD = 3;
-    bool obstacleMonitorState = false;
-
-    int startPos = -1,
-        lastEndPos,
-        lastDepth,
-        endPos,
-        minDepth;
-
-    int obstacleDistance,
-        obstacleMinDepth;
-
-    void enableObstacleMonitor();
-    void disableObstacleMonitor();
-    const char _TRIGGER_PIN_FR =  5,
-               _TRIGGER_PIN_BR =  6,
-               _TRIGGER_PIN_BB = 44,
-               _ECHO_PIN_FR    =  4,
-               _ECHO_PIN_BR    =  7,
-               _ECHO_PIN_BB    = 42,
-               _ODOMETER_PIN_L =  2,
-               _ODOMETER_PIN_R =  3;
 };
 
 
@@ -102,8 +131,14 @@ class Parking
     bool targetFound = false;
     Driver *driver;
     Sensors *sensors;
-    char parkingState = _OFF;
+    byte parkingState = _OFF;
+    bool isReverseParking;
+    int initialDisplacement;
+    int previousFront;
+    int previousBack;
     void parallel();
+    int getShortestDisplacement();
+    void reverseParking();
 };
 
 class RemoteControl

@@ -14,14 +14,16 @@ const int rDegrees = 75; //degrees to turn right
 int carSpeed = 1.5;
 int carAngle = 75;
 
-unsigned int currentAngularDisplacement;
+unsigned int initialDisplacement;
+unsigned int dRight;
+unsigned int dLeft;
 bool onCourse = false;
 String debug;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial3.begin(9600);
   Serial.begin(9600);
+  Serial3.begin(9600);
   gyro.attach();
 
   delay(1500);
@@ -47,47 +49,39 @@ void loop() {
   if(car.getAngle() == 0 && !onCourse)
   {
     onCourse = true;
-    currentAngularDisplacement = gyro.getAngularDisplacement();
-    debug = "reference offset set: " + currentAngularDisplacement;
-    Serial.println(debug);
+    initialDisplacement = gyro.getAngularDisplacement();
+    //Serial.println("reference offset set: ");
+    //Serial.print(initialDisplacement);
   }
 
-  else if(car.getAngle()==0 && currentAngularDisplacement != gyro.getAngularDisplacement())
+  else if(car.getAngle()==0 && initialDisplacement != gyro.getAngularDisplacement())
   {
-    Serial.println("Drifting detected, correcting..");
-    if(currentAngularDisplacement>1)
+    //Serial.println("Drifting detected, correcting..");
+    if(initialDisplacement>gyro.getAngularDisplacement())
     {
-
-      if(gyro.getAngularDisplacement()>currentAngularDisplacement)
-      {
-        Serial.println("Adjusting towards the left");
-        car.setAngle(-45);
-      }
-      else if(gyro.getAngularDisplacement()<currentAngularDisplacement)
-      {
-        Serial.println("Adjusting towards the right");
-        car.setAngle(45);
-      }
+      dRight = gyro.getAngularDisplacement() - initialDisplacement;
+      dLeft = 360-dRight;
     }
     else
     {
-      if(gyro.getAngularDisplacement()>currentAngularDisplacement && gyro.getAngularDisplacement() <= 180)
-      {
-        Serial.println("Adjusting towards the left");
-        car.setAngle(-45);
-      }
-      else if(gyro.getAngularDisplacement()<360 && gyro.getAngularDisplacement()>180)
-      {
-        Serial.println("Adjusting towards the right, taking ADisplacement overflow into consiteration");
-        car.setAngle(45);
-      }
+      dLeft = gyro.getAngularDisplacement() - initialDisplacement;
+      dRight = 360-dLeft;
+    }
+
+    if(dLeft<dRight)
+    {
+      car.setAngle(-45);
+    }
+    else
+    {
+      car.setAngle(45);
     }
     onCourse = false;
   }
 
-  else if(car.getAngle()!=0 && currentAngularDisplacement == gyro.getAngularDisplacement())
+  else if(car.getAngle()!=0 && initialDisplacement == gyro.getAngularDisplacement())
   {
-    Serial.println("Drift corrected. Returning to previous state");
+    //Serial.println("Drift corrected. Returning to previous state");
     onCourse = true;
     car.setAngle(0);
   }
