@@ -13,7 +13,8 @@ void setup()
 void loop()
 {
   sensors.update();
-  sensors.obstacleMonitor();
+  //sensors.obstacleMonitor();
+  //sensors.debug();
   remoteControl.listen();
   parking.monitor();
   driver.update();

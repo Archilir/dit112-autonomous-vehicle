@@ -1,16 +1,41 @@
 #include <AutonomousCarSystem.h>
 
-// Constructor
-Parking::Parking()
-{
-
-}
 
 void Parking::begin (Driver* driverReference, Sensors* sensorsReference) {
   driver  = driverReference;
   sensors = sensorsReference;
 }
 
+void Parking::start() {
+  parking = true;
+  seeking = true;
+//  sensors -> enableObstacleMonitor();
+}
+
+void Parking::stop() {
+  parking     = false;
+  seeking     = false;
+  maneuvering = false;
+  driver -> disableAutonomy();
+}
+
+void Parking::monitor() {
+  if (driver -> isAutonomous() && parking) {
+    if (seeking) {
+
+      // find the viable gap using gap monitor
+      // position
+      // stop
+    } else if (maneuvering) {
+      // maneuver rotation 1
+      // maneuver rotation 2
+      // align - measure
+      // stop
+    }
+  }
+}
+
+/*
 bool Parking::isParking() {
   return (parkingState != _OFF) ? true : false;
 }
@@ -105,11 +130,11 @@ int Parking::getShortestDisplacement(){
 }
 void Parking::reverseParking(){
 
-
+*/
   /*
   * While the car is not aligned for parking, it will attempt to align itself while also maintaining distance
   * from obstacles.
-  */
+
 
   if(getShortestDisplacement() <= 40 && !isReverseParking){
     if(sensors -> getBRDistance() > 0 && sensors -> getBRDistance() < 10){
@@ -119,12 +144,12 @@ void Parking::reverseParking(){
       driver -> setAngle(45);
     }
   }
-
+*/
   /*
    * After the target displacement is hit, theoretically the car should keep backing up
    * until it is more or less inside the space.
    * After that, it begins turning inside the space and it sets parking status to true.
-   */
+
 
   if((getShortestDisplacement() > 40)
       && (getShortestDisplacement() < 50)
@@ -143,12 +168,12 @@ void Parking::reverseParking(){
      isReverseParking = true;
     }
   }
-
+*/
   /*
  * detects obstacles at the back of the car
  * if the car is currently turning to the right, it starts turning to the left
  * if the car is already turning to the left, it just sends it forwards
- */
+
 
  long backDistance = sensors -> getBBMedian();
 
@@ -158,10 +183,10 @@ void Parking::reverseParking(){
       driver -> setAngle(45);
       driver -> setSpeed(40);
   }
-
+*/
   /*
    * If the car is aligned to its original displacement, it stops and flicks off the parking switch.
-   */
+
 
   if(getShortestDisplacement() < 5 && isReverseParking)
   {
@@ -170,4 +195,4 @@ void Parking::reverseParking(){
     targetFound = false;
     stop();
   }
-}
+}*/

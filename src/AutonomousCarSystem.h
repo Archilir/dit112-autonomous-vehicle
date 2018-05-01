@@ -5,11 +5,51 @@
 class Sensors
 {
   public:
-    Sensors();
+    void begin(Car*);
+    void update();
+    void updateSensors();
 
-    long getOdometerLeftDistance();
-    long getOdometerRightDistance();
-    long getAngularDisplacement();
+    unsigned int  getDistanceFR();
+    unsigned int  getDistanceBR();
+    unsigned int  getDistanceBB();
+    unsigned int  getAngularDisplacement();
+
+    unsigned long getOdometerLeftDistance();
+    unsigned long getOdometerRightDistance();
+
+    void debug();
+
+  private:
+    Car *car;
+    SR04 sonicFR, sonicBR, sonicBB;
+    
+    unsigned int   distanceFR,
+                   distanceBR,
+                   distanceBB,
+                   gyroAngle;
+
+    unsigned long  distanceL,
+                   distanceR,
+                   updateTimer;
+
+    const char     _TRIGGER_PIN_FR =  5,
+                   _TRIGGER_PIN_BR =  6,
+                   _TRIGGER_PIN_BB = 44,
+                   _ECHO_PIN_FR    =  4,
+                   _ECHO_PIN_BR    =  7,
+                   _ECHO_PIN_BB    = 42,
+                   _ODOMETER_PIN_L =  2,
+                   _ODOMETER_PIN_R =  3;
+
+
+
+
+/*
+
+
+    unsigned long getOdometerLeftDistance(),
+                  getOdometerRightDistance();
+    unsigned int  getGyroReading();
     int getFRDistance();
     int getBRDistance();
     int getBBDistance();
@@ -29,12 +69,35 @@ class Sensors
     bool isObstacleUpdated();
 
     bool obstacleDataUpdated = false;
-    void debug();
-    void begin(Car*);
+
+
     void update();
 
   private:
     Car *car;
+    unsigned int   distanceFR,
+                   distanceBR,
+                   distanceBB,
+                   gyroAngle;
+
+    unsigned long  distanceL,
+                   distanceR;
+
+    const char     _TRIGGER_PIN_FR =  5,
+                   _TRIGGER_PIN_BR =  6,
+                   _TRIGGER_PIN_BB = 44,
+                   _ECHO_PIN_FR    =  4,
+                   _ECHO_PIN_BR    =  7,
+                   _ECHO_PIN_BB    = 42,
+                   _ODOMETER_PIN_L =  2,
+                   _ODOMETER_PIN_R =  3;
+
+
+
+
+
+
+
 
     const char _OBSTACLE_SENSITIVITY_THRESHOLD = 3;
     bool obstacleMonitorState = false;
@@ -56,71 +119,82 @@ class Sensors
 
     void enableObstacleMonitor();
     void disableObstacleMonitor();
-    const char _TRIGGER_PIN_FR =  5,
-               _TRIGGER_PIN_BR =  6,
-               _TRIGGER_PIN_BB = 44,
-               _ECHO_PIN_FR    =  4,
-               _ECHO_PIN_BR    =  7,
-               _ECHO_PIN_BB    = 42,
-               _ODOMETER_PIN_L =  2,
-               _ODOMETER_PIN_R =  3;
+*/
 };
 
 
 class Driver
 {
   public:
-    Driver();
-    bool isTurning();
-    void setTurning(bool);
-    bool isMoving();
-    bool isAuto();
-    bool isManual();
-
-    void setAutoControl();
-    void setManualControl();
-
     void begin(Car*, Sensors*);
     void update();
+    void stop();
+
+    void enableAutonomy();
+    void disableAutonomy();
+    bool isAutonomous();
+
     void setSpeed(int);
     void setAngle(int);
-    int getAngle();
-    int getSpeed();
+    int  getSpeed();
+    int  getAngle();
 
-    void drive(float);
-    // Drive functions
-    void driveSlow();
-    void driveAverage();
-    void driveFast();
-    // Reverse functions
-    void reverseSlow();
-    void reverseAverage();
-    void reverseFast();
+    void driveForward();
+    void driveBackward();
+    void driveLeft();
+    void driveRight();
+    void driveForwardLeft();
+    void driveBackwardLeft();
+    void driveForwardRight();
+    void driveBackwardRight();
 
-    void go(int);
-    // Stop
-    void stop();
-    //Drift correction
-    void driftCorrect();
-    void clearDriftCorrectData();
+    void enableTrackingCourse();
+    void disableTrackingCourse();
+    bool isTrackingCourse();
+    void trackCourse();
+    void setCourse(int);
+
+    void enableDriftCorrection();
+    void disableDriftCorrection();
+    bool isDriftCorrecting();
+    void driftCorrection(int, int);
+
   private:
     Car *car;
-    Sensors *sensor;
-    unsigned int initialDisplacement;
-    unsigned int dRight;
-    unsigned int dLeft;
-    bool onCourse = false;
-    bool turningStatus;
-    const float _MIN_CRUISE_SPEED = 0.3,
-                _AVG_CRUISE_SPEED = 1.0,
-                _MAX_CRUISE_SPEED = 2.5;
+    Sensors *sensors;
+
+    int speedValue  = 0,
+        courseValue = 0,
+        angleValue  = 0;
+
+    bool autonomous      = false,
+         correctingDrift = false,
+         trackingCourse  = false;
+
+    void steer(int);
+    void steer();
+    void drive(int, int);
+    void drive(int);
+    void drive();
+    void boost();
 };
 
 
 class Parking
 {
   public:
-    Parking();
+    void begin(Driver*, Sensors*);
+    void start();
+    void stop();
+    void monitor();
+
+  private:
+    Driver *driver;
+    Sensors *sensors;
+    bool parking     = false,
+         seeking     = false,
+         maneuvering = false;
+  /*  Parking();
     enum States { _OFF, _PARALLEL };
     void begin(Driver*, Sensors*);
     bool start(char);
@@ -138,27 +212,47 @@ class Parking
     int previousBack;
     void parallel();
     int getShortestDisplacement();
-    void reverseParking();
+    void reverseParking();*/
 };
 
 class RemoteControl
 {
   public:
-    RemoteControl();
-    void listen();
     void begin(Driver*, Parking*);
+    void listen();
   private:
     Driver  *driver;
     Parking *parking;
-    unsigned long timeoutCounter;
-    bool timeoutLock;
+    char input;
     enum {
-      _PARKING = 'p',
-      _MANUAL  = 'm',
-      _FORWARD = 'w',
-      _REVERSE = 's',
-      _LEFT    = 'a',
-      _RIGHT   = 'd'
+      _FORWARD   = 'F',
+      _BACK      = 'B',
+      _LEFT      = 'L',
+      _RIGHT     = 'R',
+      _STOP      = 'S',
+      _F_LEFT    = 'G',
+      _F_RIGHT   = 'I',
+      _B_LEFT    = 'H',
+      _B_RIGHT   = 'J',
+      _SPEED_0   = '0',
+      _SPEED_10  = '1',
+      _SPEED_20  = '2',
+      _SPEED_30  = '3',
+      _SPEED_40  = '4',
+      _SPEED_50  = '5',
+      _SPEED_60  = '6',
+      _SPEED_70  = '7',
+      _SPEED_80  = '8',
+      _SPEED_90  = '9',
+      _SPEED_100 = 'q',
+      _AUX_1_ON  = 'W',
+      _AUX_1_OFF = 'w',
+      _AUX_2_ON  = 'U',
+      _AUX_2_OFF = 'u',
+      _AUX_3_ON  = 'V',
+      _AUX_3_OFF = 'v',
+      _AUX_4_ON  = 'X',
+      _AUX_4_OFF = 'x'
     };
     void manualControl(char);
 };

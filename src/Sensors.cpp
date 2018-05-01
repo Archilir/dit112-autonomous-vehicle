@@ -1,15 +1,8 @@
 #include <AutonomousCarSystem.h>
 
-SR04 sonicFR, sonicBR, sonicBB;
 Odometer odometerLeft(188), odometerRight(188);
 
 Gyroscope gyro(22);
-
-// Constructor
-Sensors::Sensors()
-{
-
-}
 
 void Sensors::begin(Car* reference) {
   car = reference;
@@ -20,19 +13,62 @@ void Sensors::begin(Car* reference) {
   odometerRight.attach(_ODOMETER_PIN_R);
   gyro.attach();
   delay(1500);
-  gyro.begin(90);
+  gyro.begin(60);
   odometerLeft.begin();
   odometerRight.begin();
   car->begin(odometerLeft, odometerRight, gyro);
+  updateSensors();
+  updateTimer = millis();
+}
+
+void Sensors::update() {
+  unsigned long timer = millis();
+  if (timer >= 60 + updateTimer) {
+    updateTimer = timer;
+    updateSensors();
+  }
+}
+
+void Sensors::updateSensors() {
+    distanceFR = sonicFR.getMedianDistance(2);
+    distanceBR = sonicBR.getMedianDistance(2);
+    distanceBB = sonicBB.getMedianDistance(2);
+    distanceL  = odometerLeft .getDistance();
+    distanceR  = odometerRight.getDistance();
+    gyroAngle  = gyro.getAngularDisplacement();
+}
+
+unsigned int Sensors::getDistanceFR()             { return distanceFR; }
+unsigned int Sensors::getDistanceBR()             { return distanceBR; }
+unsigned int Sensors::getDistanceBB()             { return distanceBB; }
+unsigned int Sensors::getAngularDisplacement()    { return  gyroAngle; }
+
+unsigned long Sensors::getOdometerLeftDistance()  { return  distanceL; }
+unsigned long Sensors::getOdometerRightDistance() { return  distanceR; }
+
+void Sensors::debug() {
+  String sensorData = "FR, BR, BB, oL, oR, gyro: ";
+  sensorData += distanceFR;
+  sensorData += "\t";
+  sensorData += distanceBR;
+  sensorData += "\t";
+  sensorData += distanceBB;
+  sensorData += "\t";
+  sensorData += distanceL;
+  sensorData += "\t";
+  sensorData += distanceR;
+  sensorData += "\t";
+  sensorData += gyroAngle;
+  Serial.println(sensorData);
 }
 
 // GETTERS
-
-long Sensors::getOdometerLeftDistance() {
+/*
+unsigned long Sensors::getOdometerLeftDistance() {
   return odometerLeft.getDistance();
 }
 
-long Sensors::getOdometerRightDistance() {
+unsigned long Sensors::getOdometerRightDistance() {
   return odometerRight.getDistance();
 }
 
@@ -41,6 +77,8 @@ void Sensors::update() {
   updateUltrasonic();   // manual update and storage for synchronisity
 
 }
+
+
 
 void Sensors::updateUltrasonic() {
   // 20 milliseconds each
@@ -52,9 +90,11 @@ void Sensors::updateUltrasonic() {
 int Sensors::getFRDistance() { return sonicFR.getDistance(); }
 int Sensors::getBRDistance() { return sonicBR.getDistance(); }
 int Sensors::getBBDistance() { return sonicBB.getDistance(); }
-int Sensors::getFRMedian()   { return sonicFR.getMedianDistance(); }
-int Sensors::getBRMedian()   { return sonicBR.getMedianDistance(); }
-int Sensors::getBBMedian()   { return sonicBB.getMedianDistance(); }
+int Sensors::getFRMedian()   { return sonicFR.getMedianDistance(2); }
+int Sensors::getBRMedian()   { return sonicBR.getMedianDistance(2); }
+int Sensors::getBBMedian()   { return sonicBB.getMedianDistance(2); }
+
+
 
 
 void Sensors::enableObstacleMonitor() {
@@ -117,7 +157,7 @@ void Sensors::obstacleMonitor() {
   }
 }
 
-long Sensors::getAngularDisplacement() {
+unsigned int Sensors::getGyroReading() {
   return gyro.getAngularDisplacement();
 }
 
@@ -135,4 +175,4 @@ void Sensors::debug() {
   sensorData += "\t";
   sensorData += gyro.getAngularDisplacement();
   Serial.println(sensorData);
-}
+}*/

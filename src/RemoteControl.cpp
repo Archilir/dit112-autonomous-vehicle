@@ -1,79 +1,101 @@
 #include <AutonomousCarSystem.h>
 
-// Constructor
-RemoteControl::RemoteControl()
-{
-
-}
-
 void RemoteControl::begin(Driver* driverRef, Parking* parkingRef)
 {
-  driver  = driverRef;
+  driver  =  driverRef;
   parking = parkingRef;
-  timeoutCounter = millis();
-  timeoutLock = false;
 }
 
 void RemoteControl::listen() {
   if (Serial3.available()) {
-    char command = Serial3.read();
-    switch (command) {
-      case _PARKING:
-        if (parking -> isParking())
-            parking -> stop();
-        else
-            parking -> start(parking -> _PARALLEL);
-        Serial.println("_PARKING");
+    input = Serial3.read();
+    switch (input) {
+      case _SPEED_0   : driver -> setSpeed(  0); break;
+      case _SPEED_10  : driver -> setSpeed( 10); break;
+      case _SPEED_20  : driver -> setSpeed( 20); break;
+      case _SPEED_30  : driver -> setSpeed( 30); break;
+      case _SPEED_40  : driver -> setSpeed( 40); break;
+      case _SPEED_50  : driver -> setSpeed( 50); break;
+      case _SPEED_60  : driver -> setSpeed( 60); break;
+      case _SPEED_70  : driver -> setSpeed( 70); break;
+      case _SPEED_80  : driver -> setSpeed( 80); break;
+      case _SPEED_90  : driver -> setSpeed( 90); break;
+      case _SPEED_100 : driver -> setSpeed(100); break;
+
+      case _AUX_1_ON  : break;
+      case _AUX_1_OFF : break;
+      case _AUX_2_ON  : break;
+      case _AUX_2_OFF : break;
+      case _AUX_3_ON  : break;
+      case _AUX_3_OFF : break;
+
+      // Parking - Triangle
+      case _AUX_4_ON  : driver ->  enableAutonomy(); parking -> start(); break;
+      case _AUX_4_OFF : driver -> disableAutonomy(); parking -> stop();  break;
+
+      case _STOP :
+        driver -> disableDriftCorrection();
+        driver -> enableTrackingCourse();
+        driver -> stop();
         break;
 
-      case _FORWARD: case _REVERSE: case _LEFT: case _RIGHT:
-        if (parking -> isParking()) // overrides
-          parking -> stop();
-        manualControl(command);
-      break;
-
-      default:
-        if (parking -> isParking())
-          parking -> stop();
-        else
-          driver -> drive(0);
+      case _FORWARD: case _BACK:   case _LEFT:    case _RIGHT:
+      case _F_LEFT:  case _B_LEFT: case _F_RIGHT: case _B_RIGHT:
+        manualControl(input);
         break;
-    }
-  } else if (timeoutLock && millis() > (150 + timeoutCounter)) {
-      driver -> drive(0);
-      driver -> setAngle(0);
-      timeoutLock = false;
     }
   }
+}
 
-void RemoteControl::manualControl(char command) {
-  if(driver -> isAuto())
-    driver -> setManualControl();
-  switch (command) {
+void RemoteControl::manualControl(char input) {
+  driver -> disableAutonomy();
+  switch (input) {
     case _FORWARD:
-      driver -> drive(45);
-      driver -> setAngle(0);
-      driver -> setTurning(false);
+      driver -> disableTrackingCourse();
+      driver -> enableDriftCorrection();
+      driver -> driveForward();
       break;
 
-    case _REVERSE:
-      driver -> drive(-45);
-      driver -> setAngle(0);
-      driver -> setTurning(false);
+    case _BACK:
+      driver -> disableTrackingCourse();
+      driver -> enableDriftCorrection();
+      driver -> driveBackward();
       break;
 
     case _LEFT:
-      driver -> drive(45);
-      driver -> setAngle(-75);
-      driver -> setTurning(true);
+      driver -> disableDriftCorrection();
+      driver -> enableTrackingCourse();
+      driver -> driveLeft();
+      break;
+
+    case _F_LEFT:
+      driver -> disableDriftCorrection();
+      driver -> enableTrackingCourse();
+      driver -> driveForwardLeft();
+      break;
+
+    case _B_LEFT:
+      driver -> disableDriftCorrection();
+      driver -> enableTrackingCourse();
+      driver -> driveBackwardLeft();
       break;
 
     case _RIGHT:
-      driver -> drive(45);
-      driver -> setAngle(75);
-      driver -> setTurning(true);
+      driver -> disableDriftCorrection();
+      driver -> enableTrackingCourse();
+      driver -> driveRight();
+      break;
+
+    case _F_RIGHT:
+      driver -> disableDriftCorrection();
+      driver -> enableTrackingCourse();
+      driver -> driveForwardRight();
+      break;
+
+    case _B_RIGHT:
+      driver -> disableDriftCorrection();
+      driver -> enableTrackingCourse();
+      driver -> driveBackwardRight();
       break;
   }
-  timeoutLock = true;
-  timeoutCounter = millis();
 }

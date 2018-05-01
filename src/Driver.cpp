@@ -1,125 +1,109 @@
 #include <AutonomousCarSystem.h>
 
-// Constructor
-Driver::Driver()
-{
-
-}
-
 void Driver::begin(Car* reference, Sensors* sensorRef) {
   car = reference;
-  sensor = sensorRef;
-  setManualControl();
-}
-
-bool Driver::isMoving() {
-  return (car -> getSpeed() > 0 || car -> getSpeed() < 0) ? true : false;
-}
-
-bool Driver::isTurning(){
-  return turningStatus;
-}
-
-void Driver::setTurning(bool value){
-  turningStatus = value;
-}
-
-bool Driver::isAuto() {
-  return car -> cruiseControlEnabled();
-}
-
-bool Driver::isManual() {
-  return !isAuto();
+  sensors = sensorRef;
+  courseValue = sensors -> getAngularDisplacement();
 }
 
 void Driver::update() {
-  if (isAuto())
-    car -> updateMotors();
-
-  //if (isMoving())
-  //  driftCorrect();
+  if (isTrackingCourse())
+    trackCourse();
+  if (isDriftCorrecting())
+    driftCorrection(courseValue, sensors -> getAngularDisplacement());
 }
 
-void Driver::setManualControl() {
-    car -> disableCruiseControl();
-    stop();
-    //clearDriftCorrectData();
+void Driver::setSpeed(int speed) { speedValue = speed; }
+void Driver::setAngle(int angle) { angleValue = angle; }
+int  Driver::getSpeed()          { return  speedValue; }
+int  Driver::getAngle()          { return  angleValue; }
 
-  }
-  void Driver::setAutoControl()   {
-    stop();
-    //clearDriftCorrectData();
-    car -> enableCruiseControl();
-  }
+void Driver::steer(int angle) {
+  setAngle(angle);
+  steer();
+}
+void Driver::steer() {
+  if (angleValue != car -> getAngle())
+    car -> setAngle(angleValue);
+}
 
+void Driver::drive(int speed, int angle) {
+  setAngle(angle);
+  steer();
+  drive(speed);
+}
+void Driver::drive(int speed) {
+   setSpeed(speed);
+   drive();
+}
+void Driver::drive() {
+  if (car -> getSpeed() == 0) {
+    boost();
+  }
+  if (speedValue != car -> getSpeed())
+      car -> setSpeed(speedValue);
+}
+void Driver::boost() {
+  if (speedValue != 0 && speedValue != 100 && speedValue != -100) {
+    if (speedValue > 0)
+      car -> setSpeed( 100);
+    else
+      car -> setSpeed(-100);
+    delay(10);
+  }
+}
 
 void Driver::stop() {
-  //clearDriftCorrectData();
-  //car -> stop();
-  setSpeed(0);
+  car -> setAngle(0);
+  car -> setSpeed(0);
 }
 
-void Driver::go(int cm) {
-  car -> go(cm);
+void Driver::driveForward()          { drive( abs(speedValue),   0); }
+void Driver::driveBackward()         { drive(-abs(speedValue),   0); }
+void Driver::driveLeft()             { drive( abs(speedValue), -90); }
+void Driver::driveRight()            { drive( abs(speedValue),  90); }
+void Driver::driveForwardLeft( )     { drive( abs(speedValue), -75); }
+void Driver::driveBackwardLeft()     { drive(-abs(speedValue), -75); }
+void Driver::driveForwardRight()     { drive( abs(speedValue),  75); }
+void Driver::driveBackwardRight()    { drive(-abs(speedValue),  75); }
+
+void Driver::enableAutonomy()        { autonomous =  true; stop(); }
+void Driver::disableAutonomy()       { autonomous = false; stop(); }
+bool Driver::isAutonomous()          { return  autonomous; }
+
+void Driver::setCourse(int course)   { courseValue    = course; }
+void Driver::enableTrackingCourse()  { trackingCourse =   true; }
+void Driver::disableTrackingCourse() { trackingCourse =  false; }
+bool Driver::isTrackingCourse()      { return   trackingCourse; }
+void Driver::trackCourse() {
+  courseValue = sensors -> getAngularDisplacement();
 }
 
-void Driver::clearDriftCorrectData(){
-  onCourse = true;
-  initialDisplacement = sensor -> getAngularDisplacement();
-}
-
-void Driver::setSpeed(int speed) { car -> setSpeed(speed); }
-void Driver::drive(float speed)  { car -> setSpeed(speed); }
-
-void Driver::driveSlow()         { drive( _MIN_CRUISE_SPEED); }
-void Driver::driveAverage()      { drive( _AVG_CRUISE_SPEED); }
-void Driver::driveFast()         { drive( _MAX_CRUISE_SPEED); }
-void Driver::reverseSlow()       { drive(-_MIN_CRUISE_SPEED); }
-void Driver::reverseAverage()    { drive(-_AVG_CRUISE_SPEED); }
-void Driver::reverseFast()       { drive(-_MAX_CRUISE_SPEED); }
-
-void Driver::setAngle(int angle) { car -> setAngle(angle); }
-int Driver::getAngle() { return car -> getAngle(); }
-int Driver::getSpeed() { return car -> getSpeed(); }
-
-void Driver::driftCorrect(){
-  if(isMoving() && !isTurning()){
-    if(getAngle() == 0 && !onCourse){
-      onCourse = true;
-      initialDisplacement = sensor -> getAngularDisplacement();
-      //Serial.println("reference offset set: ");
-      //Serial.print(initialDisplacement);
-    }
-
-    else if(getAngle()==0 && initialDisplacement != sensor -> getAngularDisplacement()){
-      //Serial.println("Drifting detected, correcting..");
-      if(initialDisplacement>sensor -> getAngularDisplacement()){
-        dRight = sensor -> getAngularDisplacement() - initialDisplacement;
-        dLeft = 360-dRight;
-      }
-      else
-      {
-        dLeft = sensor -> getAngularDisplacement() - initialDisplacement;
-        dRight = 360-dLeft;
-      }
-
-      if(dLeft<dRight)
-      {
-        setAngle(-45);
-      }
-      else
-      {
-        setAngle(45);
-      }
-      onCourse = false;
-    }
-
-    else if(getAngle()!=0 && initialDisplacement == sensor -> getAngularDisplacement())
-    {
-      //Serial.println("Drift corrected. Returning to previous state");
-      onCourse = true;
-      setAngle(0);
-    }
+void Driver::enableDriftCorrection()  { correctingDrift =  true; }
+void Driver::disableDriftCorrection() { correctingDrift = false; }
+bool Driver::isDriftCorrecting()      { return  correctingDrift; }
+void Driver::driftCorrection(int course, int currentDirection) {
+  int diff = (course - currentDirection + 360) % 360;
+  if (diff == 0) {
+    course = 0;
   }
-
+  else if (diff < 180) {
+    if (car -> getSpeed() > 0)
+      course = 1;
+    else
+      course = -1;
+  }
+  else if (diff > 180) {
+    if (car -> getSpeed() > 0)
+      course = -1;
+    else
+      course = 1;
+  }
+  steer(course);
+  /*
+  Serial.print(course);
+  Serial.print('\t');
+  Serial.print(currentDirection);
+  Serial.print('\t');
+  Serial.print(diff);*/
 }
