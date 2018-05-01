@@ -1,10 +1,25 @@
 #include <Smartcar.h>
+#include <String.h>
+
 
 Car car;
 
+Odometer encoderRight;
+Odometer encoderLeft;
+int offset = 25;
+Gyroscope gyro(offset);
+
+const int pinLeft = 2;
+const int pinRight = 3;
+const int lDegrees = -75; //degrees to turn left
+const int rDegrees = 75; //degrees to turn right
 
 int carSpeed = 50, carAngle = 75;
 int direction = 1;
+unsigned int currentAngularDisplacement;
+bool onCourse = false;
+String debug;
+
 
 #include <Smartcar.h>
 
@@ -22,22 +37,101 @@ const int ECHO_PIN_B    = 4;
 
 bool deadlockState = false;
 
+
 void setup() {
   Serial.begin(9600);
   Serial3.begin(9600);
-  car.begin();
+  gyro.attach();
+  delay(1500);
+  gyro.begin(60);
+  encoderLeft.attach(pinLeft);
+  encoderRight.attach(pinRight);
+  encoderLeft.begin();
+  encoderRight.begin();
+  car.begin(encoderLeft, encoderRight, gyro);
+  car.setSpeed(0.2);
+
   sonicFR.attach(TRIGGER_PIN_FR, ECHO_PIN_FR);
   sonicBR.attach(TRIGGER_PIN_BR, ECHO_PIN_BR);
   sonicB.attach(TRIGGER_PIN_B, ECHO_PIN_B);
 }
 
 void loop() {
+  gyro.update();
+  car.updateMotors();
+  driftCorrection();
   debugPrint();
   carAlign();
+  //mathAlign();
 }
 
+void driftCorrection(){
+
+    if(car.getAngle() == 0 && !onCourse)
+    {
+      onCourse = true;
+      currentAngularDisplacement = gyro.getAngularDisplacement();
+      debug = "reference offset set: " + currentAngularDisplacement;
+      Serial.println(debug);
+    }
+
+    else if(car.getAngle()==0 && currentAngularDisplacement != gyro.getAngularDisplacement())
+    {
+      Serial.println("Drifting detected, correcting..");
+      if(currentAngularDisplacement>1)
+      {
+
+        if(gyro.getAngularDisplacement()>currentAngularDisplacement)
+        {
+          Serial.println("Adjusting towards the left");
+          car.setAngle(-45);
+        }
+        else if(gyro.getAngularDisplacement()<currentAngularDisplacement)
+        {
+          Serial.println("Adjusting towards the right");
+          car.setAngle(45);
+        }
+      }
+      else
+      {
+        if(gyro.getAngularDisplacement()>currentAngularDisplacement && gyro.getAngularDisplacement() <= 180)
+        {
+          Serial.println("Adjusting towards the left");
+          car.setAngle(-45);
+        }
+        else if(gyro.getAngularDisplacement()<360 && gyro.getAngularDisplacement()>180)
+        {
+          Serial.println("Adjusting towards the right, taking ADisplacement overflow into consiteration");
+          car.setAngle(45);
+        }
+      }
+      onCourse = false;
+    }
+
+    else if(car.getAngle()!=0 && currentAngularDisplacement == gyro.getAngularDisplacement())
+    {
+      Serial.println("Drift corrected. Returning to previous state");
+      onCourse = true;
+      car.setAngle(0);
+    }
+}
+/*int math(int distanceFR, int distanceBR){
+
+  int FRdistance = sonicFR.getDistance();
+  int BRdistance = sonicBR.getDistance();
+  if(FRdistance != BRdistance){
+    int distance = abs(FRdistance - BRdistance);
+    int adjust = pow(distance,2) + pow(21,2);
+    adjust = asin((distance / sqrt(adjust))*180/PI);
+    return (FRdistance < BRdistance) ? -adjust : adjust;
+    car.setAngle(adjust);
+  }
+  return 0;
+
+}*/
 
 void debugPrint() {
+
     Serial.print("Ultrasonic, FR, BR, B:\t");
     Serial.print(sonicFR.getDistance());
     Serial.print("\t");
@@ -97,16 +191,41 @@ void deadlock(char input) {
   }
   if (deadlockState) {
     car.setAngle(0);
-    car.setSpeed(0); 
+    car.setSpeed(0);
   }
 }
+/*void mathAlign(){
+  int distanceFR = sonicFR.getDistance(),
+      distanceBR = sonicBR.getDistance();
+
+  if((distanceFR > 0 && distanceFR < 12) || (distanceBR > 0 && distanceBR < 12))  {
+    if(car.getSpeed() != 0) {
+      car.setSpeed(0);
+     }
+  }
+  else{
+    if(car.getSpeed() != 30) {
+     car.setSpeed(30);
+    }
+        if((distanceFR > 0 && distanceFR < 35) && (distanceBR > 0 && distanceBR < 35)){
+        math(distanceFR, distanceBR);
+        
+        }
+        else{
+        car.setAngle(0);
+        }
+  }
+ 
+}*/
+
+
 
 void carAlign(){
-    
+
     int distanceFR = sonicFR.getDistance(),
         distanceBR = sonicBR.getDistance();
-    
-    if((distanceFR > 0 && distanceFR < 10) || (distanceBR > 0 && distanceBR < 10))  {
+
+    if((distanceFR > 0 && distanceFR < 8) || (distanceBR > 0 && distanceBR < 8))  {
       if(car.getSpeed() != 0) {
         car.setSpeed(0);
        }
@@ -120,19 +239,18 @@ void carAlign(){
 }
 
 void align(int distanceFR, int distanceBR) {
-  
-  if((distanceFR > 0 && distanceFR < 35) && (distanceBR > 0 && distanceBR < 35)){  
+
+  if((distanceFR > 0 && distanceFR < 35) && (distanceBR > 0 && distanceBR < 35)){
        if(distanceFR > distanceBR) {
-            car.setAngle(45);
+            car.setAngle(60);
         }
        else if(distanceFR < distanceBR){
-            car.setAngle(-45);
+            car.setAngle(-60);
        }
         else{
-        car.setAngle(0); 
+        car.setAngle(0);
         }
     } else{
       car.setAngle(0);
     }
 }
-
