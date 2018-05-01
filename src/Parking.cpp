@@ -9,28 +9,39 @@ void Parking::begin (Driver* driverReference, Sensors* sensorsReference) {
 void Parking::start() {
   parking = true;
   seeking = true;
+  driver  -> disableTrackingCourse();
+  driver  -> enableDriftCorrection();
+  sensors -> enableMonitor();
+  driver  -> driveForward();
 //  sensors -> enableObstacleMonitor();
 }
 
 void Parking::stop() {
+  driver  -> disableAutonomy();
   parking     = false;
   seeking     = false;
   maneuvering = false;
-  driver -> disableAutonomy();
+  sensors -> disableMonitor();
 }
 
 void Parking::monitor() {
-  if (driver -> isAutonomous() && parking) {
+  if (parking && driver -> isAutonomous()) {
     if (seeking) {
-
+      if (sensors -> isSectorViable()) {
+        seeking = false;
+        maneuvering = true;
       // find the viable gap using gap monitor
       // position
       // stop
+      }
     } else if (maneuvering) {
       // maneuver rotation 1
       // maneuver rotation 2
       // align - measure
       // stop
+      maneuvering = false;
+    } else {
+      stop();
     }
   }
 }

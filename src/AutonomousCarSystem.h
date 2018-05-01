@@ -16,21 +16,37 @@ class Sensors
 
     unsigned long getOdometerLeftDistance();
     unsigned long getOdometerRightDistance();
+    unsigned long getOdometerAvgDistance();
 
+    void enableMonitor();
+    void disableMonitor();
+    void resetMonitor();
+    bool isMonitoring();
+    bool isSectorViable();
+    void monitor();
     void debug();
 
   private:
     Car *car;
     SR04 sonicFR, sonicBR, sonicBB;
-    
+    Odometer  odometerLeft  = Odometer(188),
+              odometerRight = Odometer(188);
+    Gyroscope          gyro = Gyroscope(22);
+
     unsigned int   distanceFR,
                    distanceBR,
                    distanceBB,
-                   gyroAngle;
+                   gyroAngle,
+                   sectorDepth,
+                   lastSectorDepth = 0;
 
     unsigned long  distanceL,
                    distanceR,
-                   updateTimer;
+                   updateTimer,
+                   sectorLength,
+                   lastSectorLength = 0,
+                   sectorStart,
+                   sectorEnd;
 
     const char     _TRIGGER_PIN_FR =  5,
                    _TRIGGER_PIN_BR =  6,
@@ -41,7 +57,7 @@ class Sensors
                    _ODOMETER_PIN_L =  2,
                    _ODOMETER_PIN_R =  3;
 
-
+    bool monitoring = false;
 
 
 /*
