@@ -29,6 +29,33 @@ Some more auxilliary methods:
 
 **img.shape** - returns a tuple of the image's X size, Y size and number of channels(for reference, BGR has 3 channels)
 **img.size** - just like a 2d array, simply returns the number of pixel objects
+**cv2.add** - two images can be added, but this will just perform literal addition - their BGR values will be added and cap out at 255.
+**cv2.addWeighted(img1, a, img2, b, c)** - weighted add is a more useful method. Rather than add pixels until a cap, it attempts to create a transparent overlay of an image over another. It uses this using an (img = a*img1 + b*img2 + c) formula, where a and b are numbers between 0 and 1. Their purpose is to determine which image should be more visible. c is a number that I don't know what it does so I just use the one provided in the example in my OpenCV python tutorial.
 
+## Masks
+Creating a mask is the first step towards object detection. A mask basically only detects parts of a frame of a certain color, such as a road sign. This part of the documentation is easiest to follow by reading along with the maskingExample snippet.
 
+First, we must create a copy of the current frame that's in the HSV color space. As opposed to **B**lue **G**reen **R**ed, we use **H**ue **S**aturation **T**ransparency for masking. I assume this is because it's easier to get a range of color from it, because that's what we will be doing.
+
+We convert a frame into HSV using the cv2.cvtColor method. To it, we pass the image to be converted and the conversion method we are using. In this case it's COLOR_BGR2HSV. As we see, one can specify other color spaces we want to convert between. The specific code example is: 
+
+    hsv = cv2.cvtColor(image, COLOR_BGR2HSV)
+Next, we must create a range of colors we want to use. In my example, I'm using a flat green. There is a rather simple step by step procedure we can use to retreive a range of colors for our mask.
+
+ 1. Start with a BGR color we want to mask. In our case, it's a flat green - 0, 255, 0.
+ 2. We will convert this color to HSV using the same cvtColor method. In this case: 
+`bgr = numpy.uint8([[[0, 255, 0]]])`
+`hsv = cv2.cvtColor(rgb, cv2.COLOR_BGR2HSV)`
+ **Note:** singular colors use NumPy's method for creating arrays of unsigned ints because they are faster, because OpenCV uses them, and because f**k our lives.
+ Printing this will return `[[[60, 255, 255]]]`
+ 
+ 3. From here, we know our H value is 60. That's all we really need to create a simple range of green colors.
+ `upper = numpy.array([H+10, 255, 255])`
+ `lower = numpy.array([H-10, 100, 100])`
+ **Note:** I don't know why the hell we use a normal NumPy array instead of an uint8 one here. I assume it's because the next method uses that data type. All I know is that I've tested them and they aren't interchangeable.
+ 
+ 4. Now that we have our range, we can finally create our mask. Here, we use the cv2.inRange method:
+`mask = cv2.inRange(hsv, lower_red, upper_red)`
+
+From here, you can just use the normal cv2.imshow method to show the masked images. The example snippet shows how to display the normal feed, masked feed and a masked feed in color together.
 
