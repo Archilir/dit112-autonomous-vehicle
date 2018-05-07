@@ -37,7 +37,7 @@ void Driver::drive(int speed) {
    drive();
 }
 void Driver::drive() {
-  if (car -> getSpeed() == 0) {
+  if (car -> getSpeed() == 0 || speedValue < car -> getSpeed()) {
     boost();
   }
   if (speedValue != car -> getSpeed())
@@ -79,7 +79,10 @@ void Driver::trackCourse() {
   courseValue = sensors -> getAngularDisplacement();
 }
 
-void Driver::enableDriftCorrection()  { correctingDrift =  true; }
+void Driver::enableDriftCorrection()  {
+  courseValue = sensors -> getUnsyncAngularDisplacement();
+  correctingDrift =  true;
+}
 void Driver::disableDriftCorrection() { correctingDrift = false; }
 bool Driver::isDriftCorrecting()      { return  correctingDrift; }
 void Driver::driftCorrection(int course, int currentDirection) {
@@ -89,21 +92,22 @@ void Driver::driftCorrection(int course, int currentDirection) {
   }
   else if (diff < 180) {
     if (car -> getSpeed() > 0)
-      course = 1;
+      course = (diff >   4) ?  45 :  1;
     else
-      course = -1;
+      course = (diff >   4) ? -45 : -1;
   }
   else if (diff > 180) {
     if (car -> getSpeed() > 0)
-      course = -1;
+      course = (diff < 356) ? -45 : -1;
     else
-      course = 1;
+      course = (diff < 356) ?  45 :  1;
   }
   steer(course);
-  /*
-  Serial.print(course);
+  /*Serial.print("Current Direction, Course, Diff:");
   Serial.print('\t');
   Serial.print(currentDirection);
   Serial.print('\t');
-  Serial.print(diff);*/
+  Serial.print(course);
+  Serial.print('\t');
+  Serial.println(diff);*/
 }

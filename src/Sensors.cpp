@@ -2,23 +2,23 @@
 
 void Sensors::begin(Car* reference) {
   car = reference;
-  sonicBB.attach(_TRIGGER_PIN_FR, _ECHO_PIN_FR); //trigger pin, echo pin
+  sonicBB.attach(_TRIGGER_PIN_BB, _ECHO_PIN_BB); //trigger pin, echo pin
   sonicBR.attach(_TRIGGER_PIN_BR, _ECHO_PIN_BR); //trigger pin, echo pin
-  sonicFR.attach(_TRIGGER_PIN_BB, _ECHO_PIN_BB); //trigger pin, echo pin
+  sonicFR.attach(_TRIGGER_PIN_FR, _ECHO_PIN_FR); //trigger pin, echo pin
   odometerLeft.attach(_ODOMETER_PIN_L);
   odometerRight.attach(_ODOMETER_PIN_R);
   gyro.attach();
   delay(1500);
-  gyro.begin(60);
+  gyro.begin(20);
   odometerLeft.begin();
   odometerRight.begin();
   car->begin(odometerLeft, odometerRight, gyro);
   updateSensors();
   updateTimer = millis();
-  disableMonitor();
 }
 
 void Sensors::update() {
+  gyro.update();
   unsigned long timer = millis();
   if (timer >= 60 + updateTimer) {
     updateTimer = timer;
@@ -28,7 +28,6 @@ void Sensors::update() {
 }
 
 void Sensors::updateSensors() {
-    gyro.update();
     distanceFR = sonicFR.getMedianDistance(3);
     distanceBR = sonicBR.getMedianDistance(3);
     distanceBB = sonicBB.getMedianDistance(3);
@@ -37,10 +36,13 @@ void Sensors::updateSensors() {
     gyroAngle  = gyro.getAngularDisplacement();
 }
 
-unsigned int Sensors::getDistanceFR()             { return distanceFR; }
-unsigned int Sensors::getDistanceBR()             { return distanceBR; }
-unsigned int Sensors::getDistanceBB()             { return distanceBB; }
-unsigned int Sensors::getAngularDisplacement()    { return  gyroAngle; }
+unsigned int Sensors::getDistanceFR()                { return distanceFR; }
+unsigned int Sensors::getDistanceBR()                { return distanceBR; }
+unsigned int Sensors::getDistanceBB()                { return distanceBB; }
+unsigned int Sensors::getAngularDisplacement()       { return  gyroAngle; }
+unsigned int Sensors::getUnsyncAngularDisplacement() {
+  return gyro.getAngularDisplacement();
+}
 
 unsigned long Sensors::getOdometerLeftDistance()  { return  distanceL; }
 unsigned long Sensors::getOdometerRightDistance() { return  distanceR; }
@@ -58,6 +60,7 @@ void Sensors::enableMonitor()  {
 
 void Sensors::disableMonitor() {
   monitoring = false;
+  resetMonitor();
 }
 
 bool Sensors::isMonitoring()   {
@@ -65,38 +68,30 @@ bool Sensors::isMonitoring()   {
 }
 
 void Sensors::resetMonitor() {
-  lastSectorDepth  = 0;
-  lastSectorLength = 0;
-  sectorStart  = getOdometerAvgDistance();
-  sectorEnd    = sectorStart;
-  sectorDepth  = (distanceFR == 0) ? 70 : distanceFR;
+  sectorStart = getOdometerAvgDistance();
+  sectorEnd   = sectorStart;
 }
 
 void Sensors::monitor() {
   if (monitoring) {
-    unsigned int currentDepth = (distanceFR == 0) ? 70 : distanceFR;
-
-    int lBound = -3 + sectorDepth,
-        rBound =  3 + sectorDepth;
-
-    lBound = (lBound < 0) ? 0 : lBound;
-
-    if (currentDepth <= lBound || currentDepth >= rBound) {
-      lastSectorLength = sectorEnd - sectorStart;
-      lastSectorDepth  = sectorDepth;
-      sectorStart = sectorEnd;
-      sectorDepth = currentDepth;
-    }
-
-    sectorEnd = getOdometerAvgDistance();
-    if (currentDepth < sectorDepth) {
-      sectorDepth = currentDepth;
+    unsigned int  currentDepth = (distanceBR == 0) ? 70 : distanceBR;
+    if (currentDepth < 15) {
+      sectorStart = getOdometerAvgDistance();
+      sectorEnd   = sectorStart;
+    } else {
+      sectorEnd   = getOdometerAvgDistance();
     }
   }
 }
 
 bool Sensors::isSectorViable() {
-  return (lastSectorLength > 40 && lastSectorDepth > 20) ? true : false;
+  unsigned long distance = sectorEnd - sectorStart;
+  return (distance >= 40) ? true : false;
+}
+
+bool Sensors::isClearSector() {
+  unsigned long distance = sectorEnd - sectorStart;
+  return (distance >= 100) ? true : false;
 }
 
 void Sensors::debug() {

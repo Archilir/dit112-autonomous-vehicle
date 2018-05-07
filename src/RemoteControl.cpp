@@ -48,7 +48,9 @@ void RemoteControl::listen() {
 }
 
 void RemoteControl::manualControl(char input) {
+  parking -> stop();
   driver -> disableAutonomy();
+
   switch (input) {
     case _FORWARD:
       driver -> disableTrackingCourse();

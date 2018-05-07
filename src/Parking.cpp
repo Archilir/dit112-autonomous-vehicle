@@ -21,189 +21,121 @@ void Parking::stop() {
   parking     = false;
   seeking     = false;
   maneuvering = false;
+  positioning = false;
+  isReverseParking = false;
   sensors -> disableMonitor();
 }
 
 void Parking::monitor() {
-  if (parking && driver -> isAutonomous()) {
+  if (parking) {
     if (seeking) {
       if (sensors -> isSectorViable()) {
         seeking = false;
+        positioning = true;
+      }
+    } else if (positioning) {
+      if (sensors -> isClearSector()) {
+        stop();
+      } else if (isPositioned()) {
+        positioning = false;
+        driver -> stop();
+        delay(1000);
+        parkingAlignment = sensors -> getUnsyncAngularDisplacement();
         maneuvering = true;
-      // find the viable gap using gap monitor
-      // position
-      // stop
+        previousFront = sensors -> getDistanceFR();
+        previousBack  = sensors -> getDistanceBR();
+        driver -> disableDriftCorrection();
+        driver -> drive(-abs(driver -> getSpeed()), 60);
       }
     } else if (maneuvering) {
-      // maneuver rotation 1
-      // maneuver rotation 2
-      // align - measure
-      // stop
-      maneuvering = false;
+      reverseParking();
     } else {
       stop();
     }
   }
 }
 
-/*
-bool Parking::isParking() {
-  return (parkingState != _OFF) ? true : false;
+bool Parking::isPositioned() {
+  return (sensors -> getDistanceBR() < 15) ? true : false;
 }
 
-bool Parking::start(char type) {
-  if (!isParking()) {
-    driver  -> setAutoControl();
-    sensors -> startObstacleMonitor();
-    switch (type) {
-      case _PARALLEL:
-        parkingState = _PARALLEL;
-        driver -> driveSlow();
-        //Serial.println("Parking start");
-        break;
+int Parking::getNewDisplacement(int diff) {
+  diff = parkingAlignment + diff;
+  if (diff < 0)
+    return 360 + diff;
+  else if (diff > 360)
+    return diff - 360;
+  if (diff == 360) {
+    diff = 0;
+  }
+  return diff;
+}
 
-      default:
-        driver -> setManualControl();
-        return false;
-        break;
+int Parking::getShortestDisplacement(){
+  unsigned int currentDisplacement = sensors -> getAngularDisplacement(),
+               displacementL = parkingAlignment - currentDisplacement,
+               displacementR = (360 - currentDisplacement) + parkingAlignment;
+
+  if (displacementL == 360) displacementL = 0;
+  if (displacementR == 360) displacementR = 0;
+
+  if (displacementL < 0) displacementL = -displacementL;
+  if (displacementL < displacementR)
+    return displacementL;
+  else
+    return displacementR;
+}
+
+
+
+void Parking::reverseParking() {
+  int shortestDisplacement = getShortestDisplacement();
+
+  if (!isReverseParking) {
+    if ((sensors -> getDistanceBR() > 0 && sensors -> getDistanceBR() < 10)) {
+         Serial.println(sensors -> getDistanceBR());
+
+    driver -> steer(0);
     }
 
-    return true;
+    else if (shortestDisplacement <= 40 && !isReverseParking) {
+      driver -> steer(60);
+    }
+
+    if (shortestDisplacement > 40 && shortestDisplacement <= 50) {
+      isReverseParking = true;
+      driver -> drive(-abs(driver -> getSpeed()), -60);
+    }
+
+    if (sensors -> getDistanceBB() > 0 &&
+        sensors -> getDistanceBB() < 10) {
+
+      isReverseParking = true;
+      driver -> drive(abs(driver -> getSpeed()), 60);
+    }
   }
 
+  if (isReverseParking) {
+    if (shortestDisplacement <= 3 || shortestDisplacement >= 357) {
+      isReverseParking = false;
+      maneuvering = false;
+    }
+
+    if (sensors -> getDistanceBB() >  0 && sensors -> getDistanceBB() <= 10) {
+      driver -> drive(abs(driver -> getSpeed()), 60);
+    }
+  }
+}
+
+bool Parking::isViable(int current) {
+  int m1 = getNewDisplacement(-5);
+  int m2 = getNewDisplacement(5);
+  if (m1 > m2) {
+    if (m1 >= current && m2 <= current)
+      return true;
+  } else {
+    if (m2 >= current && m1 <= current)
+      return true;
+  }
   return false;
 }
-
-void Parking::stop() {
-  parkingState = _OFF;
-  sensors -> stopObstacleMonitor();
-  driver -> setManualControl();
-}
-
-void Parking::monitor() {
-  if (isParking()) {
-    switch (parkingState) {
-      case _PARALLEL:
-        parallel();
-        break;
-
-      default:
-        break;
-    }
-  }
-}
-
-void Parking::parallel() {
-  if (!targetFound) {
-    if (sensors -> isObstacleUpdated()) {
-        sensors -> obstacleDataUpdated = false;
-        if (sensors -> getObstacleDistance() >= 30 &&
-            sensors -> getObstacleMinDepth() >  10) {
-
-            sensors -> stopObstacleMonitor();
-            targetFound = true;
-            driver -> go(10);
-            driver -> setManualControl();
-            delay(1000);
-            initialDisplacement = sensors -> getAngularDisplacement();
-
-            driver -> setAngle(45);
-            driver -> setSpeed(-40);
-            reverseParking();
-            //the above 3 statements should be executed before this method is return
-            //this is just for the sake of structuring it with ilja later
-        }
-    }
-  } else {
-    reverseParking();
-
-
-  }
-}
-int Parking::getShortestDisplacement(){
-  int currentDisplacement = sensors -> getAngularDisplacement();
-  int displacement1 = initialDisplacement-currentDisplacement;
-  int displacement2 = (360-currentDisplacement) + initialDisplacement ;
-
-  if(displacement1 < 0)
-  {
-    displacement1 = -displacement1;
-  }
-
-  if(displacement1 < displacement2)
-  {
-    return displacement1;
-  }
-  else
-  {
-    return displacement2;
-  }
-}
-void Parking::reverseParking(){
-
-*/
-  /*
-  * While the car is not aligned for parking, it will attempt to align itself while also maintaining distance
-  * from obstacles.
-
-
-  if(getShortestDisplacement() <= 40 && !isReverseParking){
-    if(sensors -> getBRDistance() > 0 && sensors -> getBRDistance() < 10){
-      driver -> setAngle(0);
-    }
-    else{
-      driver -> setAngle(45);
-    }
-  }
-*/
-  /*
-   * After the target displacement is hit, theoretically the car should keep backing up
-   * until it is more or less inside the space.
-   * After that, it begins turning inside the space and it sets parking status to true.
-
-
-  if((getShortestDisplacement() > 40)
-      && (getShortestDisplacement() < 50)
-      && !isReverseParking){
-
-    previousFront = sensors -> getFRDistance();
-    previousBack = sensors -> getBRDistance();
-
-    if(previousBack< sensors -> getBRDistance() &&
-       previousFront > sensors -> getFRDistance()){
-     driver -> setAngle(0);
-    }
-
-    else{
-     driver -> setAngle(-45);
-     isReverseParking = true;
-    }
-  }
-*/
-  /*
- * detects obstacles at the back of the car
- * if the car is currently turning to the right, it starts turning to the left
- * if the car is already turning to the left, it just sends it forwards
-
-
- long backDistance = sensors -> getBBMedian();
-
-  if(backDistance > 0
-  && backDistance < 21
-  && isReverseParking){
-      driver -> setAngle(45);
-      driver -> setSpeed(40);
-  }
-*/
-  /*
-   * If the car is aligned to its original displacement, it stops and flicks off the parking switch.
-
-
-  if(getShortestDisplacement() < 5 && isReverseParking)
-  {
-
-    isReverseParking = false;
-    targetFound = false;
-    stop();
-  }
-}*/

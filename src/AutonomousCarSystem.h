@@ -13,7 +13,7 @@ class Sensors
     unsigned int  getDistanceBR();
     unsigned int  getDistanceBB();
     unsigned int  getAngularDisplacement();
-
+    unsigned int  getUnsyncAngularDisplacement();
     unsigned long getOdometerLeftDistance();
     unsigned long getOdometerRightDistance();
     unsigned long getOdometerAvgDistance();
@@ -23,6 +23,7 @@ class Sensors
     void resetMonitor();
     bool isMonitoring();
     bool isSectorViable();
+    bool isClearSector();
     void monitor();
     void debug();
 
@@ -31,111 +32,29 @@ class Sensors
     SR04 sonicFR, sonicBR, sonicBB;
     Odometer  odometerLeft  = Odometer(188),
               odometerRight = Odometer(188);
-    Gyroscope          gyro = Gyroscope(22);
+    Gyroscope gyro          = Gyroscope(22);
 
-    unsigned int   distanceFR,
-                   distanceBR,
-                   distanceBB,
-                   gyroAngle,
-                   sectorDepth,
-                   lastSectorDepth = 0;
-
-    unsigned long  distanceL,
-                   distanceR,
-                   updateTimer,
-                   sectorLength,
-                   lastSectorLength = 0,
-                   sectorStart,
-                   sectorEnd;
-
-    const char     _TRIGGER_PIN_FR =  5,
-                   _TRIGGER_PIN_BR =  6,
-                   _TRIGGER_PIN_BB = 44,
-                   _ECHO_PIN_FR    =  4,
-                   _ECHO_PIN_BR    =  7,
-                   _ECHO_PIN_BB    = 42,
-                   _ODOMETER_PIN_L =  2,
-                   _ODOMETER_PIN_R =  3;
-
-    bool monitoring = false;
-
-
-/*
-
-
-    unsigned long getOdometerLeftDistance(),
-                  getOdometerRightDistance();
-    unsigned int  getGyroReading();
-    int getFRDistance();
-    int getBRDistance();
-    int getBBDistance();
-
-    int getFRMedian();
-    int getBRMedian();
-    int getBBMedian();
-
-
-    void startObstacleMonitor();
-    void stopObstacleMonitor();
-    void obstacleMonitor();
-    bool obstacleMonitorEnabled();
-
-    int  getObstacleMinDepth();
-    int  getObstacleDistance();
-    bool isObstacleUpdated();
-
-    bool obstacleDataUpdated = false;
-
-
-    void update();
-
-  private:
-    Car *car;
     unsigned int   distanceFR,
                    distanceBR,
                    distanceBB,
                    gyroAngle;
 
     unsigned long  distanceL,
-                   distanceR;
+                   distanceR,
+                   updateTimer,
+                   sectorStart,
+                   sectorEnd;
 
-    const char     _TRIGGER_PIN_FR =  5,
+    const char     _TRIGGER_PIN_FR = 44,
                    _TRIGGER_PIN_BR =  6,
-                   _TRIGGER_PIN_BB = 44,
-                   _ECHO_PIN_FR    =  4,
+                   _TRIGGER_PIN_BB =  5,
+                   _ECHO_PIN_FR    = 42,
                    _ECHO_PIN_BR    =  7,
-                   _ECHO_PIN_BB    = 42,
+                   _ECHO_PIN_BB    =  4,
                    _ODOMETER_PIN_L =  2,
                    _ODOMETER_PIN_R =  3;
 
-
-
-
-
-
-
-
-    const char _OBSTACLE_SENSITIVITY_THRESHOLD = 3;
-    bool obstacleMonitorState = false;
-
-    int startPos = -1,
-        lastEndPos,
-        lastDepth,
-        endPos,
-        minDepth;
-
-    int obstacleDistance,
-        obstacleMinDepth;
-
-    int sonicFRDistance,
-        sonicBRDistance,
-        sonicBBDistance;
-
-    void updateUltrasonic();
-
-    void enableObstacleMonitor();
-    void disableObstacleMonitor();
-*/
+    bool monitoring = false;
 };
 
 
@@ -154,6 +73,10 @@ class Driver
     void setAngle(int);
     int  getSpeed();
     int  getAngle();
+
+    void drive(int, int);
+    void steer(int);
+    void drive(int);
 
     void driveForward();
     void driveBackward();
@@ -187,10 +110,7 @@ class Driver
          correctingDrift = false,
          trackingCourse  = false;
 
-    void steer(int);
     void steer();
-    void drive(int, int);
-    void drive(int);
     void drive();
     void boost();
 };
@@ -203,13 +123,25 @@ class Parking
     void start();
     void stop();
     void monitor();
-
+    int  getShortestDisplacement();
+    void reverseParking();
   private:
     Driver *driver;
     Sensors *sensors;
+
+    unsigned int previousFront,
+                 previousBack;
+
     bool parking     = false,
          seeking     = false,
-         maneuvering = false;
+         maneuvering = false,
+         positioning = false,
+         isReverseParking = false;
+
+    bool isViable(int);
+    unsigned int parkingAlignment;
+    bool isPositioned();
+    int getNewDisplacement(int);
   /*  Parking();
     enum States { _OFF, _PARALLEL };
     void begin(Driver*, Sensors*);
