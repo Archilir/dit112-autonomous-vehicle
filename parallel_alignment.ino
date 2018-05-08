@@ -62,7 +62,6 @@ void loop() {
   driftCorrection();
   debugPrint();
   carAlign();
-  //mathAlign();
 }
 
 void driftCorrection(){
@@ -115,20 +114,7 @@ void driftCorrection(){
       car.setAngle(0);
     }
 }
-/*int math(int distanceFR, int distanceBR){
 
-  int FRdistance = sonicFR.getDistance();
-  int BRdistance = sonicBR.getDistance();
-  if(FRdistance != BRdistance){
-    int distance = abs(FRdistance - BRdistance);
-    int adjust = pow(distance,2) + pow(21,2);
-    adjust = asin((distance / sqrt(adjust))*180/PI);
-    return (FRdistance < BRdistance) ? -adjust : adjust;
-    car.setAngle(adjust);
-  }
-  return 0;
-
-}*/
 
 void debugPrint() {
 
@@ -194,31 +180,6 @@ void deadlock(char input) {
     car.setSpeed(0);
   }
 }
-/*void mathAlign(){
-  int distanceFR = sonicFR.getDistance(),
-      distanceBR = sonicBR.getDistance();
-
-  if((distanceFR > 0 && distanceFR < 12) || (distanceBR > 0 && distanceBR < 12))  {
-    if(car.getSpeed() != 0) {
-      car.setSpeed(0);
-     }
-  }
-  else{
-    if(car.getSpeed() != 30) {
-     car.setSpeed(30);
-    }
-        if((distanceFR > 0 && distanceFR < 35) && (distanceBR > 0 && distanceBR < 35)){
-        math(distanceFR, distanceBR);
-        
-        }
-        else{
-        car.setAngle(0);
-        }
-  }
- 
-}*/
-
-
 
 void carAlign(){
 
