@@ -26,9 +26,9 @@ void setup() {
   Serial.begin(9600);
   Serial3.begin(9600);
   car.begin(); //initialize the car using the encoders and the gyro
-  sonicFR.attach(TRIGGER_PIN_FR, ECHO_PIN_FR); //trigger pin, echo pin
+  sonicB.attach(TRIGGER_PIN_FR, ECHO_PIN_FR); //trigger pin, echo pin
   sonicBR.attach(TRIGGER_PIN_BR, ECHO_PIN_BR); //trigger pin, echo pin
-  sonicB.attach(TRIGGER_PIN_B, ECHO_PIN_B); //trigger pin, echo pin
+  sonicFR.attach(TRIGGER_PIN_B, ECHO_PIN_B); //trigger pin, echo pin
 }
 
 void loop() {
@@ -38,14 +38,10 @@ void loop() {
 
 // Printing out ultrasonic sensor readings to the Serial as long as it's attached
 void debugPrint() {
-  if (Serial.available()) {
-    Serial.print("Ultrasonic, FR: ");
-    Serial.println(sonicFR.getDistance());
-    Serial.print("Ultrasonic, BR: ");
-    Serial.println(sonicBR.getDistance());
-    Serial.print("Ultrasonic,  B: ");
-    Serial.println(sonicB .getDistance());
-  }
+  String buff = "Ultrasonic, FR, BR, B: ";
+  String spac = " ";
+  buff = buff + sonicFR.getMedianDistance() + spac + sonicBR.getMedianDistance() + spac + sonicB.getMedianDistance();
+  Serial.println(buff);
 }
 
 // Main switch between the deadlock and drive options
