@@ -59,3 +59,17 @@ Next, we must create a range of colors we want to use. In my example, I'm using 
 
 From here, you can just use the normal cv2.imshow method to show the masked images. The example snippet shows how to display the normal feed, masked feed and a masked feed in color together.
 
+## Thresholding
+Thresholding is the act of taking a grayscale image , picking a color value X in it, and showing all values greater/smaller than it as black/white.
+There are 5 types of normal thresholding - Binary, Binary Inverted, Truncated, ToZero and ToZero inverted. An example is seen [here](http://opencv-python-tutroals.readthedocs.io/en/latest/_images/threshold.jpg)
+Creating a thresholded image is a matter of using a singular method. The only quirky part is having to assign it to not just an image variable, but a tuple of the image and something called a retval. I don't quite understand the use of it, but it hasn't interfered with my code, so it can be ignored for now. Here is a snippet from the example code:
+`ret,thresh1 = cv2.threshold(image,x,y,cv2.THRESH_BINARY)`
+After declaring the retval and the thresholded image, the threshold method is ran. Its arguments are:
+ 1. The original, grayscale image
+ 2. A color value - All pixels greater than this value will be turned into the Y value.
+ 3. Value to turn all >X pixels into
+ 4. Thresholding type
+A more refined method to use is Adaptive thresholding, but it's impossible to use this with the Raspberry Pi camera. The reason is that Adaptive Thresholding requires a camera that can record a native grayscale feed rather than using a converted one. Shame, since adaptive thresholding seems to be much more accurate.
+A solution I've played with is being able to switch color spaces of every indivitual frame to grayscale and then run adaptive thresholding on it, but I feel this will affect performance too much.
+
+
