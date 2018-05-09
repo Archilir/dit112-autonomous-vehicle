@@ -25,9 +25,7 @@ int medianreadFront = sonicFR.getMedianDistance(5);
 void setup() {
   Serial.begin(9600);
   car.begin(); //initialize the car using the encoders and the gyro
-  sonicFR.attach(TRIGGER_PIN_FR, ECHO_PIN_FR); //trigger pin, echo pin
-  sonicBR.attach(TRIGGER_PIN_BR, ECHO_PIN_BR); //trigger pin, echo pin
-  sonicB.attach(TRIGGER_PIN_B, ECHO_PIN_B); //trigger pin, echo pin
+  sonicA.attach(TRIGGER_PIN_FR, ECHO_PIN_FR); //trigger pin, echo pin
 }
 
 
@@ -35,37 +33,52 @@ void loop() {
     debugPrint();
     testdone();
  }
-void debugPrint() {
- // if (Serial.available()) {
-    //Serial.print("Ultrasonic, FR: ");
-    //Serial.println(sonicFR.getDistance());
-    //Serial.print("Ultrasonic, BR: ");
-    //Serial.println(sonicBR.getDistance());
-    //Serial.print("Ultrasonic,  B: ");
-    //Serial.println(sonicB .getDistance());
-    //medianBack = sonicFR.getMedianDistance(30);
-    medianBack = sonicFR.getDistance();
-    Serial.print("Ultrasonic, FR: ");
 
-    Serial.println(medianBack);
-  //}
+void debugPrint() {
+
 }
 
+void firstPart() {
 
+if (distanceCenter >= 15)
 
-void testdone() {
-  int lastread = 0;
-  int getspeed = car.getSpeed();
-  for (int i=0;i<5;i++) lastread = sonicFR.getDistance(); //take an example of data
-  if (sonicFR.getMedianDistance(5) > lastread + lastread*0.5) //if reading now is much bigger than lastread, then scrap it
-  {}
-  else {
-    int minusspeed = 100-sonicFR.getMedianDistance(3);
-    if (medianreadFront < 5 && 0 < medianreadFront ) {
-    car.setAngle(-45);
-    car.setSpeed(getspeed-minusspeed);
-   }
-   else
-   car.setSpeed(0);
+{}
+
+  else
+{
+
+if (distanceLeft > distanceRight)
+  {moveleft}
+
+if (distanceRight > distanceLeft)
+  {moveright}
+
+if (distanceLeft <= 10 && distanceCenter <= 10 || distanceRight <= 10 && distanceCenter <= 10)
+  {moveback}
+
+}
+
+}
+
+ void moveleft() {
+   car.setAngle(car.getAngle() - 10)
+ }
+
+  void moveback() {
+    car.setSpeed(-50)
+    car.setAngle(0)
   }
+
+   void moveright() {
+     car.setAngle(car.getAngle() + 10)
+   }
+
+
+  int minusspeed = 100-sonicFR.getMedianDistance(3);
+  if (medianreadFront < 5 && 0 < medianreadFront ) {
+  car.setAngle(-45);
+  car.setSpeed(getspeed-minusspeed);
+ }
+ else
+ car.setSpeed(0);
 }
