@@ -3,6 +3,9 @@ from picamera import PiCamera
 import time
 import numpy as np
 import cv2 as cv
+import serial
+import RPi.GPIO as GPIO
+import time
 
 #A function to compare contour vertices to recognize the shape
 def shape_compare(c):
@@ -43,6 +46,9 @@ camera_array = PiRGBArray(camera, size=(320, 240))
 #Allow camera to start
 time.sleep(0.1)
 
+#Initialize serial
+ser = serial.Serial('/dev/ttyACM0', 9600, 'N')
+
 #Perform functions for each frame of the camera capture
 for frame in camera.capture_continuous(camera_array, format="bgr", use_video_port=True):
 	img = frame.array
@@ -72,11 +78,13 @@ for frame in camera.capture_continuous(camera_array, format="bgr", use_video_por
 
 		#Call the method we made above to decide what the shape of a contour is
 		thishape = shape_compare(c)
+		if(cv.contourArea(c)>100):
+			cv.drawContours(img, [c], -1, (0, 255, 0), 2)
 		
-		cv.drawContours(img, [c], -1, (0, 255, 0), 2)
-		
-		cv.putText(img, thishape, (cX - 20, cY - 20),
-			cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+			cv.putText(img, thishape, (cX - 20, cY - 20),
+				cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+			if(thishape == "stop sign"):
+                                ser.write("X")
 	 
 		cv.imshow("Image", img)
 		cv.imshow("Threshold", thresh)
