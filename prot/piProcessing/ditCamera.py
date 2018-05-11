@@ -5,8 +5,10 @@ import numpy as np
 import cv2 as cv
 import time
 import threading
+import serial
 
 class Camera:
+
     #Initialize camera
     camera = PiCamera()
 
@@ -83,13 +85,14 @@ class Camera:
         cameraThread = threading.Thread(name="processCamera")
         cameraThread.setDaemon(True)
         cameraThread.start()
+        self.serial.write('X'.encode())
         print("Thread Started")
         
     def processCamera(self):
+        time.sleep(0.1)
         #Perform functions for each frame of the camera capture
-        for frame in Camera.camera.capture_continuous(Camera.camera_array, format="bgr", use_video_port=True):
+        for frame in self.camera.capture_continuous(self.camera_array, format="bgr", use_video_port=True):
                 img = frame.array
-
                 #draw relevant color spaces
                 #Use greyscale for easier recognition of contours
                 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -121,12 +124,16 @@ class Camera:
 
                 #
                 #checks whether a stop sign and a color are detected. If they are, writes to serial.
-                #self.detectSign(self.detectColor(mask), self.detectShapes(img, contours), self.serial)
+                self.detectSign(self.detectColor(mask), self.detectShapes(img, contours), self.serial)
                 #
                 #draw images & contours
+                
                 cv.imshow("Image", img)
-                cv.imshow("Mask", res)
-                cv.imshow("Threshold", thresh)
+                #cv.imshow("Mask", res)
+                #cv.imshow("Threshold", thresh)
+                key = cv.waitKey(1) & 0xFF
+                self.camera_array.truncate(0)
+                if key==ord("q"):
+                    break
 
-                Camera.camera_array.truncate(0)
         

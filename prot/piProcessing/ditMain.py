@@ -15,4 +15,6 @@ serial_arduino = serial.Serial('/dev/ttyACM0', 9600)
 camera = Camera(serial_arduino)
 
 #Initialize threads
-camera.processCamera()
+camera.start()
+
+serial_arduino.write('X'.encode())
