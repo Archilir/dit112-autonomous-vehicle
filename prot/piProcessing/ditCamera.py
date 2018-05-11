@@ -6,9 +6,11 @@ import cv2 as cv
 import time
 import threading
 import serial
-
+import logging
 class Camera:
-
+    logging.basicConfig(level=logging.DEBUG,
+                    format='[%(levelname)s] (%(threadName)-10s) %(message)s',
+                    )
     #Initialize camera
     camera = PiCamera()
 
@@ -80,15 +82,10 @@ class Camera:
     def detectSign(self, shape, color, serial):
         if(shape and color):
             serial.write('X'.encode())
-            
-    def start(self):
-        cameraThread = threading.Thread(name="processCamera")
-        cameraThread.setDaemon(True)
-        cameraThread.start()
-        self.serial.write('X'.encode())
-        print("Thread Started")
         
     def processCamera(self):
+        logging.debug('Starting')
+        self.serial.write('X'.encode())
         time.sleep(0.1)
         #Perform functions for each frame of the camera capture
         for frame in self.camera.capture_continuous(self.camera_array, format="bgr", use_video_port=True):
@@ -135,5 +132,10 @@ class Camera:
                 self.camera_array.truncate(0)
                 if key==ord("q"):
                     break
+                
+    def start(self):
+        cameraThread = threading.Thread(target=self.processCamera)
+        cameraThread.start()
+        print("Thread Started")
 
         

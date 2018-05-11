@@ -9,12 +9,10 @@ import time
 import threading
 
 #Initialize serial
-serial_arduino = serial.Serial('/dev/ttyACM0', 9600)
-
+serial_arduino = serial.Serial('/dev/ttyACM1', 9600)
+time.sleep(1)
 #Initialize camera object
 camera = Camera(serial_arduino)
 
 #Initialize threads
 camera.start()
-
-serial_arduino.write('X'.encode())
