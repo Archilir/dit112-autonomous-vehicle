@@ -1,7 +1,6 @@
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from ditCamera import Camera
-import time
 import numpy as np
 import cv2 as cv
 import serial
@@ -13,11 +12,7 @@ import threading
 serial_arduino = serial.Serial('/dev/ttyACM0', 9600)
 
 #Initialize camera object
-camera = Camera()
+camera = Camera(serial_arduino)
 
 #Initialize threads
-cameraThread = threading.Thread(target=camera, args=(serial_arduino))
-
-
-
-	
+camera.processCamera()
