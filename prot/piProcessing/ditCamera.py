@@ -35,13 +35,13 @@ class Camera:
 
             elif len(approx) == 4:
 
-            (x, y, w, h) = cv.boundingRect(approx)
-            ar = w / float(h)
-                    
+                (x, y, w, h) = cv.boundingRect(approx)
+                ar = w / float(h)
+                        
                 if ar >= 0.95 and ar <= 1.05:
                     return "square"
-                    else: 
-                        return "rectangle"
+                else: 
+                    return "rectangle"
             elif len(approx) == 8:
                 return "stop sign"
             else:
@@ -75,7 +75,7 @@ class Camera:
         return False
 
     def detectSign(shape, color, serial):
-        if(shape && color):
+        if(shape and color):
             serial.write('X')
 
     def processCamera():
