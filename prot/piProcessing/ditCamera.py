@@ -7,7 +7,8 @@ import time
 import threading
 import serial
 import logging
-class Camera:
+import multiprocessing as mp
+class Camera(mp.Process):
     logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
                     )
@@ -22,9 +23,11 @@ class Camera:
     camera_array = PiRGBArray(camera, size=(320, 240))
     
     def __init__(self, serial):
+        #mp.Process.__init__(self)
         self.serial = serial
         #Allow camera to start
         time.sleep(0.1)
+        #self.processCamera()
 
     #A function to compare contour vertices to recognize the shape
     def shape_compare(self, c):
@@ -128,13 +131,16 @@ class Camera:
                 cv.imshow("Image", img)
                 #cv.imshow("Mask", res)
                 #cv.imshow("Threshold", thresh)
-                key = cv.waitKey(1) & 0xFF
                 self.camera_array.truncate(0)
+                key = cv.waitKey(1) & 0xFF
                 if key==ord("q"):
                     break
+
+    def startProcess(self):
+        mp.Process(target=self.processCamera).start()
                 
     def start(self):
-        cameraThread = threading.Thread(target=self.processCamera)
+        cameraThread = threading.Thread(target=self.startProcess)
         cameraThread.start()
         print("Thread Started")
 
