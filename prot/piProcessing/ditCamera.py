@@ -85,7 +85,7 @@ class Camera:
         
     def processCamera(self):
         logging.debug('Starting')
-        self.serial.write('X'.encode())
+        #self.serial.write('X'.encode())
         time.sleep(0.1)
         #Perform functions for each frame of the camera capture
         for frame in self.camera.capture_continuous(self.camera_array, format="bgr", use_video_port=True):
