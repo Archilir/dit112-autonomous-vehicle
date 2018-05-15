@@ -9,9 +9,7 @@ import serial
 import logging
 import multiprocessing as mp
 class Camera(mp.Process):
-    logging.basicConfig(level=logging.DEBUG,
-                    format='[%(levelname)s] (%(threadName)-10s) %(message)s',
-                    )
+
     #Initialize camera
     camera = PiCamera()
 
@@ -87,8 +85,6 @@ class Camera(mp.Process):
             serial.write('X'.encode())
         
     def processCamera(self):
-        logging.debug('Starting')
-        #self.serial.write('X'.encode())
         time.sleep(0.1)
         #Perform functions for each frame of the camera capture
         for frame in self.camera.capture_continuous(self.camera_array, format="bgr", use_video_port=True):
@@ -135,13 +131,18 @@ class Camera(mp.Process):
                 key = cv.waitKey(1) & 0xFF
                 if key==ord("q"):
                     break
-
-    def startProcess(self):
-        mp.Process(target=self.processCamera).start()
                 
-    def start(self):
-        cameraThread = threading.Thread(target=self.startProcess)
-        cameraThread.start()
-        print("Thread Started")
+    #def start(self):
+    #    cameraThread = threading.Thread(target=self.startProcess)
+    #    cameraThread.start()
+    #    print("Thread Started")
+
+try:
+        serial_arduino = serial.Serial('/dev/ttyAMA0', 9600)
+except Exception:
+        serial_arduino = serial.Serial('/dev/ttyACM1', 9600)
+        
+mCamera = Camera(serial_arduino)
+mCamera.processCamera()
 
         

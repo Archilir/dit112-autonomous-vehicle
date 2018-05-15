@@ -229,13 +229,16 @@ class Joystick(mp.Process):
         # If you forget this line, the program will 'hang'
         # on exit if running from IDLE.
         pygame.quit ()
-
-    def startProcess(self):
-        mp.Process(target=self.processJoystick).start()
         
-    def start(self):
-        joystickThread = threading.Thread(target=self.processJoystick)
-        joystickThread.start()
-        print("Thread Started")
+    #def start(self):
+    #    joystickThread = threading.Thread(target=self.processJoystick)
+    #    joystickThread.start()
+    #    print("Thread Started")
 
-    
+try:
+        serial_arduino = serial.Serial('/dev/ttyAMA0', 9600)
+except Exception:
+        serial_arduino = serial.Serial('/dev/ttyACM1', 9600)
+
+mJoystick = Joystick(serial_arduino)
+mJoystick.processJoystick()
