@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+import math
 import cv2 as cv
 import serial
 import RPi.GPIO as GPIO
@@ -7,6 +8,7 @@ import time
 import threading
 import logging
 import multiprocessing as mp
+import struct
 
 BLACK    = (   0,   0,   0)
 WHITE    = ( 255, 255, 255)
@@ -75,23 +77,33 @@ class Joystick(mp.Process):
         self.screen = pygame.display.set_mode(self.size)
         pygame.display.set_caption("Joystick output")
         self.done = False
+        self.parking = False
         self.clock = pygame.time.Clock()
         pygame.joystick.init()
         self.textPrint = TextPrint()
+        self.prevValue = [0, 0, 0, 0, 0, 0]
         #self.processJoystick()
 
-    def buttonInput(self, button):
+    def buttonPress(self, button):
         if(button == Joystick.BUTTON_SQUARE):
-            self.serial.write('x'.encode())
+            if(not self.parking):
+                self.parking = True
+                self.serial.write('X'.encode())
+            else:
+                self.parking = False
+                self.serial.write('x'.encode())
             
         elif(button == Joystick.BUTTON_CROSS):
-            self.serial.write('X'.encode())
+            self.serial.write('S'.encode())
+            if(self.parking):
+                self.parking = False
+                self.serial.write('x'.encode())
             
         elif(button == Joystick.BUTTON_CIRCLE):
-            self.serial.write('X'.encode())
+            self.serial.write('5'.encode())
 
         elif(button == Joystick.BUTTON_TRIANGLE):
-            self.serial.write('X'.encode())
+            self.serial.write('V'.encode())
 
         elif(button == Joystick.BUTTON_L1):
             self.serial.write('X'.encode())
@@ -126,19 +138,98 @@ class Joystick(mp.Process):
         else:
             print("Undefined button pressed: This should not happen")
 
-    def hatInput(self, hat, value):
-        if(hat == 0):
-            if(value[0] > 0):
-                self.serial.write('X'.encode())
-            elif(value[0] < 0):
-                self.serial.write('X'.encode())
+    def buttonRelease(self, button):
+        #if(button == Joystick.BUTTON_SQUARE):
+        #    self.serial.write('X'.encode())
+            
+        if(button == Joystick.BUTTON_CROSS):
+            self.serial.write('S'.encode())
+            
+        elif(button == Joystick.BUTTON_CIRCLE):
+            self.serial.write('5'.encode())
 
-            if(value[1] > 0):
-                self.serial.write('X'.encode())
-            elif(value[1] < 0):
-                self.serial.write('X'.encode())
+        elif(button == Joystick.BUTTON_TRIANGLE):
+            self.serial.write('v'.encode())
+
+        elif(button == Joystick.BUTTON_L1):
+            self.serial.write('X'.encode())
+
+        elif(button == Joystick.BUTTON_R1):
+            self.serial.write('X'.encode())
+
+        elif(button == Joystick.BUTTON_L2):
+            self.serial.write('X'.encode())
+
+        elif(button == Joystick.BUTTON_R2):
+            self.serial.write('X'.encode())
+
+        elif(button == Joystick.BUTTON_SHARE):
+            self.serial.write('X'.encode())
+
+        elif(button == Joystick.BUTTON_OPTIONS):
+            self.serial.write('X'.encode())
+
+        elif(button == Joystick.BUTTON_L3):
+            self.serial.write('X'.encode())
+
+        elif(button == Joystick.BUTTON_R3):
+            self.serial.write('X'.encode())
+
+        elif(button == Joystick.BUTTON_PLAYSTATION):
+            self.serial.write('X'.encode())
+
+        elif(button == Joystick.BUTTON_TOUCHPAD):
+            self.serial.write('X'.encode())
+
         else:
-            print("Undefined hat pressed. This should not happen.")
+            print("Undefined button released: This should not happen")
+
+    def hatPress(self, value):
+        self.serial.write('5'.encode())
+        if(value[0] > 0):
+                self.serial.write('R'.encode())
+        elif(value[0] < 0):
+                self.serial.write('L'.encode())
+
+        if(value[1] > 0):
+                self.serial.write('F'.encode())
+        elif(value[1] < 0):
+                self.serial.write('B'.encode())
+
+        if(value[0] == 0 and value[1] == 0):
+            self.serial.write('S'.encode())
+
+    def axisProcess(self, axis, pos):
+        value = math.ceil(pos*100)
+        if(axis == Joystick.AXIS_LEFT_X):
+            if(value != self.prevValue[Joystick.AXIS_LEFT_X]):
+                self.prevValue[Joystick.AXIS_LEFT_X] = value
+                self.serial.write('N'.encode())
+                self.serial.write(struct.pack('!b', int(-value)))
+                              
+        elif(axis == Joystick.AXIS_LEFT_Y):
+            if(value != self.prevValue[Joystick.AXIS_LEFT_Y]):
+                self.prevValue[Joystick.AXIS_LEFT_Y] = value
+                self.serial.write('M'.encode())
+                self.serial.write(struct.pack('!b', int(-value)))
+                              
+        elif(axis == Joystick.AXIS_RIGHT_X):
+            if(value != self.prevValue[Joystick.AXIS_RIGHT_X]):
+                self.prevValue[Joystick.AXIS_RIGHT_X] = value
+                self.serial.write('O'.encode())
+                self.serial.write(struct.pack('!b', int(-value)))
+                              
+        elif(axis == Joystick.AXIS_RIGHT_Y):
+            if(value != self.prevValue[Joystick.AXIS_RIGHT_Y]):
+                self.prevValue[Joystick.AXIS_RIGHT_Y] = value
+                self.serial.write('P'.encode())
+                self.serial.write(struct.pack('!b', int(value)))
+
+    def clearAxis(self, joystick):
+        if(joystick.get_axis(Joystick.AXIS_LEFT_Y) > -0.06 and joystick.get_axis(Joystick.AXIS_LEFT_Y) < 0.06 and
+           self.prevValue[Joystick.AXIS_LEFT_Y] > -0.06 and self.prevValue[Joystick.AXIS_LEFT_Y] < 0.06):
+            self.prevValue[Joystick.AXIS_LEFT_Y] = 0
+            self.serial.write('S'.encode())
             
     def processJoystick(self):
         logging.debug('Starting')
@@ -150,9 +241,16 @@ class Joystick(mp.Process):
                 
                 # Possible joystick actions: JOYAXISMOTION JOYBALLMOTION JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
                 if event.type == pygame.JOYBUTTONDOWN:
-                    print("Joystick button pressed.")
+                    print("Joystick button pressed")
+                    self.buttonPress(event.button)
                 if event.type == pygame.JOYBUTTONUP:
                     print("Joystick button released.")
+                    self.buttonRelease(event.button)
+                if event.type == pygame.JOYHATMOTION:
+                    self.hatPress(event.value)
+                    print(event.value)
+                if event.type == pygame.JOYAXISMOTION:
+                    self.axisProcess(event.axis, event.value)
                     
          
             # DRAWING STEP
@@ -171,7 +269,7 @@ class Joystick(mp.Process):
             for i in range(joystick_count):
                 joystick = pygame.joystick.Joystick(i)
                 joystick.init()
-            
+
                 self.textPrint.printS(self.screen, "Joystick {}".format(i) )
                 self.textPrint.indent()
             
@@ -188,6 +286,7 @@ class Joystick(mp.Process):
                 for i in range( axes ):
                     axis = joystick.get_axis( i )
                     self.textPrint.printS(self.screen, "Axis {} value: {:>6.3f}".format(i, axis) )
+                    self.clearAxis(joystick)
                 self.textPrint.unindent()
                     
                 buttons = joystick.get_numbuttons()
@@ -197,8 +296,6 @@ class Joystick(mp.Process):
                 for i in range( buttons ):
                     button = joystick.get_button( i )
                     self.textPrint.printS(self.screen, "Button {:>2} value: {}".format(i,button) )
-                    if(button == 1):
-                        self.buttonInput(i);
                 self.textPrint.unindent()
                     
                 # Hat switch. All or nothing for direction, not like joysticks.
@@ -210,8 +307,6 @@ class Joystick(mp.Process):
                 for i in range( hats ):
                     hat = joystick.get_hat( i )
                     self.textPrint.printS(self.screen, "Hat {} value: {}".format(i, str(hat)))
-                    if(hat != (0, 0)):
-                       self.hatInput(i, hat)
                 self.textPrint.unindent()
                 
                 self.textPrint.unindent()
@@ -242,4 +337,5 @@ except Exception:
         serial_arduino = serial.Serial('/dev/ttyACM1', 9600)
 
 mJoystick = Joystick(serial_arduino)
+serial_arduino.write('5'.encode())
 mJoystick.processJoystick()

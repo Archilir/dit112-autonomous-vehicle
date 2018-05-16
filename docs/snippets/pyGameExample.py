@@ -61,6 +61,8 @@ while done==False:
             print("Joystick button pressed.")
         if event.type == pygame.JOYBUTTONUP:
             print("Joystick button released.")
+        if event.type == pygame.JOYHATMOTION:
+            print(event.value)
             
  
     # DRAWING STEP
@@ -95,7 +97,7 @@ while done==False:
         
         for i in range( axes ):
             axis = joystick.get_axis( i )
-            textPrint.printS(screen, "Axis {} value: {:>6.3f}".format(i, axis) )
+            textPrint.printS(screen, "Axis {} value: {}".format(i, axis) )
         textPrint.unindent()
             
         buttons = joystick.get_numbuttons()
