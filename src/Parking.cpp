@@ -113,10 +113,12 @@ void Parking::enter() {
 }
 
 void Parking::back() {
-  if (sensors -> getDistanceRearCorner() < 12) {
+  if (sensors -> getDistanceRearCorner() < 10 ||
+      sensors -> getDistanceRear() < 5) {
     driver -> stop();
     delay(200);
-    if (sensors -> getDistanceRearCorner() < 7)
+    if (sensors -> getDistanceRearCorner() < 7 ||
+        sensors -> getDistanceRear() < 5)
       driver -> driveRight();
     else {
       driver -> driveBackwardLeft();
@@ -127,21 +129,23 @@ void Parking::back() {
 
 void Parking::position() {
   if (sensors -> getSpeed() < 0) {
-    if (sensors -> getDistanceRearCorner() < 10 ||
+    if (sensors -> getDistanceRear() < 5 ||
+        sensors -> getDistanceRearCorner() < 5 ||
         sensors -> getDistanceMiddleSide() < 5) {
-      driver -> driveForward();
+
+      driver -> stop();
       delay(200);
       driver -> driveForwardRight();
     }
   } else {
     if (sensors -> getDistanceFront() < 6) {
-      driver -> driveForward();
+      driver -> stop();
       delay(200);
       driver -> driveBackwardLeft();
     }
   }
   if (withinRange(sensors -> getUnsyncAngularDisplacement(), lastDirection, parkingDirection)) {
-    driver -> driveForward();
+    driver -> stop();
     changeState(_MEASURING);
   }
 }

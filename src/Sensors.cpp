@@ -3,9 +3,10 @@
 void Sensors::begin(Car* reference) {
   car = reference;
   sonicFront.attach(_TRIGGER_PIN_FRONT, _ECHO_PIN_FRONT); //trigger pin, echo pin
-  sonicRearCorner.attach(_TRIGGER_PIN_REAR_SIDE, _ECHO_PIN_REAR_SIDE); //trigger pin, echo pin
+  sonicRear.attach(_TRIGGER_PIN_REAR, _ECHO_PIN_REAR); //trigger pin, echo pin
   sonicFrontSide.attach(_TRIGGER_PIN_FRONT_SIDE, _ECHO_PIN_FRONT_SIDE); //trigger pin, echo pin
   irMiddleSide.attach(_IR_PIN_MIDDLE_SIDE);
+  irRearCorner.attach(_IR_PIN_REAR_CORNER);
   odometerLeft.attach(_ODOMETER_PIN_L);
   odometerRight.attach(_ODOMETER_PIN_R);
   gyro.attach();
@@ -20,24 +21,44 @@ void Sensors::begin(Car* reference) {
 }
 
 void Sensors::update() {
-  gyro.update();
-  unsigned long timer = millis();
-  if (timer >= 80 + updateTimer) {
-    updateTimer = timer;
-    updateSensors();
+  if (sensorsEnabled) {
+    gyro.update();
+    unsigned long timer = millis();
+    if (timer >= 80 + updateTimer) {
+      updateTimer = timer;
+      updateSensors();
+    }
+    monitor();
   }
-  monitor();
+}
+
+void Sensors::enableSensors() {
+  sensorsEnabled = true;
+}
+
+void Sensors::disableSensors() {
+  sensorsEnabled = false;
+}
+
+bool Sensors::isEnabled() {
+  return sensorsEnabled;
 }
 
 void Sensors::updateSensors() {
     distanceFront      = sonicFront.getMedianDistance(3);
-    distanceRearCorner = sonicRearCorner.getMedianDistance(3);
+    distanceRear       = sonicRear.getMedianDistance(3);
     distanceFrontSide  = sonicFrontSide.getMedianDistance(3);
     distanceMiddleSide = irMiddleSide.getMedianDistance(3);
     if (distanceMiddleSide == 0)
       distanceMiddleSide = 70;
     else if (distanceMiddleSide >= 12)
       distanceMiddleSide = distanceMiddleSide - 12;
+    distanceRearCorner = irRearCorner.getMedianDistance(3);
+    if (distanceRearCorner == 0)
+      distanceRearCorner = 70;
+    else if (distanceRearCorner >= 12)
+      distanceRearCorner = distanceRearCorner - 12;
+
     distanceL  = odometerLeft .getDistance();
     distanceR  = odometerRight.getDistance();
     gyroAngle  = gyro.getAngularDisplacement();
@@ -48,6 +69,7 @@ int Sensors::getSpeed() { return car -> getSpeed(); }
 unsigned int Sensors::getDistanceFront()      { return distanceFront;      }
 unsigned int Sensors::getDistanceFrontSide()  { return distanceFrontSide;  }
 unsigned int Sensors::getDistanceRearCorner() { return distanceRearCorner; }
+unsigned int Sensors::getDistanceRear()       { return distanceRear;       }
 unsigned int Sensors::getDistanceMiddleSide() { return distanceMiddleSide; }
 
 unsigned int Sensors::getAngularDisplacement()       { return  gyroAngle; }

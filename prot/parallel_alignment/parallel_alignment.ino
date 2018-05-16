@@ -1,4 +1,4 @@
-9#include <Smartcar.h>
+#include <Smartcar.h>
 #include <String.h>
 
 
@@ -191,7 +191,7 @@ void carAlign(){
         car.setSpeed(0);
        }
     }
-    else4178t {
+    else {
        if(car.getSpeed() != 30) {
         car.setSpeed(30);
        }

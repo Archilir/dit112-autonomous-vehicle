@@ -16,31 +16,33 @@ void RemoteControl::listen() {
 
     if (controlState == _STANDARD) {
       switch (input) {
-        case _LEFT_X:  controlState = _STICK_LEFT_X;  break;
-        case _LEFT_Y:  controlState = _STICK_LEFT_Y;  break;
-        case _RIGHT_X: controlState = _STICK_RIGHT_X; break;
-        case _RIGHT_Y: controlState = _STICK_RIGHT_Y; break;
+        case _LEFT_X:  sensors -> disableSensors(); controlState = _STICK_LEFT_X;  break;
+        case _LEFT_Y:  sensors -> disableSensors(); controlState = _STICK_LEFT_Y;  break;
+        //case _RIGHT_X: controlState = _STICK_RIGHT_X; break;
+        //case _RIGHT_Y: controlState = _STICK_RIGHT_Y; break;
         default: standardScheme(input);
       }
-    } else if (isDigit(input)) {
+    } else {
       switch (controlState) {
         case _STICK_LEFT_X:
           driver -> steer(input);
           controlState = _STANDARD;
+          sensors -> enableSensors();
           break;
 
         case _STICK_LEFT_Y:
           driver -> drive(input);
           controlState = _STANDARD;
+          sensors -> enableSensors();
           break;
 
-        case _STICK_RIGHT_X:
+        /*case _STICK_RIGHT_X:
           controlState = _STANDARD;
           break;
 
         case _STICK_RIGHT_Y:
           controlState = _STANDARD;
-          break;  
+          break;  */
       }
     }
   }

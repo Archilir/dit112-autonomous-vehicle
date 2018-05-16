@@ -15,6 +15,7 @@ class Sensors
     unsigned int  getDistanceFrontSide();
     unsigned int  getDistanceMiddleSide();
     unsigned int  getDistanceRearCorner();
+    unsigned int  getDistanceRear();
 
     unsigned int  getAngularDisplacement();
     unsigned int  getUnsyncAngularDisplacement();
@@ -22,6 +23,9 @@ class Sensors
     unsigned long getOdometerRightDistance();
     unsigned long getOdometerAvgDistance();
 
+    void enableSensors();
+    void disableSensors();
+    bool isEnabled();
 
     void sirenOn();
     void sirenOff();
@@ -36,13 +40,15 @@ class Sensors
 
   private:
     Car *car;
-    SR04 sonicFront, sonicFrontSide, sonicRearCorner;
-    GP2Y0A21 irMiddleSide;
+    SR04 sonicFront, sonicFrontSide, sonicRear;
+    GP2Y0A21 irMiddleSide, irRearCorner;
     Odometer  odometerLeft  = Odometer(188),
               odometerRight = Odometer(188);
     Gyroscope gyro          = Gyroscope(22);
 
+    bool sensorsEnabled = true;
     unsigned int   distanceFront,
+                   distanceRear,
                    distanceRearCorner,
                    distanceMiddleSide,
                    distanceFrontSide,
@@ -56,11 +62,12 @@ class Sensors
 
     const char     _TRIGGER_PIN_FRONT      = 45,
                    _TRIGGER_PIN_FRONT_SIDE = 44,
-                   _TRIGGER_PIN_REAR_SIDE  =  5,
+                   _TRIGGER_PIN_REAR       =  5,
                    _ECHO_PIN_FRONT         = 43,
                    _ECHO_PIN_FRONT_SIDE    = 42,
-                   _ECHO_PIN_REAR_SIDE     =  4,
+                   _ECHO_PIN_REAR          =  4,
                    _IR_PIN_MIDDLE_SIDE     = A8,
+                   _IR_PIN_REAR_CORNER     = A15,
                    _ODOMETER_PIN_L         =  2,
                    _ODOMETER_PIN_R         =  3,
                    _SIREN_PIN              = A0,
