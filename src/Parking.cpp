@@ -4,63 +4,39 @@
 void Parking::begin (Driver* driverReference, Sensors* sensorsReference) {
   driver  = driverReference;
   sensors = sensorsReference;
+  lastDirection = sensors -> getAngularDisplacement();
 }
 
-void Parking::start() {
-  parking = true;
-  seeking = true;
-  driver  -> disableTrackingCourse();
-  driver  -> enableDriftCorrection();
-  sensors -> enableMonitor();
-  driver  -> driveForward();
-//  sensors -> enableObstacleMonitor();
-}
-
-void Parking::stop() {
-  driver  -> disableAutonomy();
-  parking     = false;
-  seeking     = false;
-  maneuvering = false;
-  positioning = false;
-  isReverseParking = false;
-  sensors -> disableMonitor();
-}
+/* Segment of the Activity loop responsible for monitoring the Parking module's
+ * state machine's states.
+ */
 
 void Parking::monitor() {
-  if (parking) {
-    if (seeking) {
-      if (sensors -> isSectorViable()) {
-        seeking = false;
-        positioning = true;
-      }
-    } else if (positioning) {
-      if (sensors -> isClearSector()) {
-        stop();
-      } else if (isPositioned()) {
-        positioning = false;
-        driver -> stop();
-        delay(1000);
-        parkingAlignment = sensors -> getUnsyncAngularDisplacement();
-        maneuvering = true;
-        previousFront = sensors -> getDistanceFR();
-        previousBack  = sensors -> getDistanceBR();
-        driver -> disableDriftCorrection();
-        driver -> drive(-abs(driver -> getSpeed()), 60);
-      }
-    } else if (maneuvering) {
-      reverseParking();
-    } else {
-      stop();
-    }
+  switch (parkingState) {
+    case _IDLING:      idle();     break;
+    case _STARTING:    start();    break;
+    case _SEARCHING:   search();   break;
+    case _ENTERING:    enter();    break;
+    case _BACKING:     back();     break;
+    case _POSITIONING: position(); break;
+    case _MEASURING:   measure();  break;
+    case _ALIGNING:    align();    break;
+    case _STOPPING:    stop();     break;
   }
+  lastDirection = sensors -> getAngularDisplacement();
 }
 
-bool Parking::isPositioned() {
-  return (sensors -> getDistanceBR() < 15) ? true : false;
+/*
+ * Dedicated method used for changing the states
+ */
+
+void Parking::changeState(char newState) {
+  parkingState = newState;
 }
 
-int Parking::getNewDisplacement(int diff) {
-  diff = parkingAlignment + diff;
+
+unsigned int Parking::getNewDisplacement(int current, int diff) {
+  diff = current + diff;
   if (diff < 0)
     return 360 + diff;
   else if (diff > 360)
@@ -71,71 +47,139 @@ int Parking::getNewDisplacement(int diff) {
   return diff;
 }
 
-int Parking::getShortestDisplacement(){
-  unsigned int currentDisplacement = sensors -> getAngularDisplacement(),
-               displacementL = parkingAlignment - currentDisplacement,
-               displacementR = (360 - currentDisplacement) + parkingAlignment;
+void Parking::idle() {
+  // Serial.println("PARKING: idling.");
+}
 
-  if (displacementL == 360) displacementL = 0;
-  if (displacementR == 360) displacementR = 0;
+// PArking states
 
-  if (displacementL < 0) displacementL = -displacementL;
-  if (displacementL < displacementR)
-    return displacementL;
-  else
-    return displacementR;
+/* 1. Finding correct distance: SEARCH
+ * 2. Turning 45o left while moving back: ENTER
+ * 3. Backing 'till finding obstacle: BACK - Exit state: correct distance
+ * 4. Turning 45o right before hitting course while moving forward: POSITION
+ * 5. Calculating distance to front-back obstacles and finding a middle spot threshold: MEASURE
+ * 6. Final positioning between obstacles: ALIGN
+ */
+
+// Initialize parking states
+
+void Parking::initiate() {
+  driver ->  enableAutonomy();
+  changeState(_STARTING);
+
+}
+
+void Parking::start() {
+  /*Serial.print(course);
+  Serial.print('\t');
+  Serial.print(sensors -> getAngularDisplacement());
+  Serial.print('\t');
+  Serial.println(getTarget(course, parkingDirection));*/
+
+  parkingDirection = 0;
+  course = 0;
+  lastDirection = sensors -> getAngularDisplacement();
+  driver  -> disableTrackingCourse();
+  driver  -> enableDriftCorrection();
+  sensors -> enableMonitor();
+  driver  -> driveForward();
+  changeState(_SEARCHING);
 }
 
 
-
-void Parking::reverseParking() {
-  int shortestDisplacement = getShortestDisplacement();
-
-  if (!isReverseParking) {
-    if ((sensors -> getDistanceBR() > 0 && sensors -> getDistanceBR() < 10)) {
-         Serial.println(sensors -> getDistanceBR());
-
-    driver -> steer(0);
-    }
-
-    else if (shortestDisplacement <= 40 && !isReverseParking) {
-      driver -> steer(60);
-    }
-
-    if (shortestDisplacement > 40 && shortestDisplacement <= 50) {
-      isReverseParking = true;
-      driver -> drive(-abs(driver -> getSpeed()), -60);
-    }
-
-    if (sensors -> getDistanceBB() > 0 &&
-        sensors -> getDistanceBB() < 10) {
-
-      isReverseParking = true;
-      driver -> drive(abs(driver -> getSpeed()), 60);
-    }
-  }
-
-  if (isReverseParking) {
-    if (shortestDisplacement <= 3 || shortestDisplacement >= 357) {
-      isReverseParking = false;
-      maneuvering = false;
-    }
-
-    if (sensors -> getDistanceBB() >  0 && sensors -> getDistanceBB() <= 10) {
-      driver -> drive(abs(driver -> getSpeed()), 60);
-    }
+void Parking::search() {
+  if (sensors -> isSectorViable()) {
+    driver ->stop();
+    delay(1000);
+    parkingDirection = sensors -> getUnsyncAngularDisplacement();
+    course = getNewDisplacement(parkingDirection, -45);
+    driver -> disableDriftCorrection();
+    driver -> driveBackwardRight();
+    changeState(_ENTERING);
   }
 }
 
-bool Parking::isViable(int current) {
-  int m1 = getNewDisplacement(-5);
-  int m2 = getNewDisplacement(5);
-  if (m1 > m2) {
-    if (m1 >= current && m2 <= current)
-      return true;
+void Parking::enter() {
+  if (sensors -> getDistanceMiddleSide() < 5)
+    driver -> driveBackward();
+  else {
+    driver -> driveBackwardRight();
+  }
+
+  if (withinRange(sensors -> getUnsyncAngularDisplacement(), lastDirection, course)) {
+    driver -> driveBackward();
+    changeState(_BACKING);
+  }
+}
+
+void Parking::back() {
+  if (sensors -> getDistanceRearCorner() < 12) {
+    driver -> stop();
+    delay(200);
+    if (sensors -> getDistanceRearCorner() < 7)
+      driver -> driveRight();
+    else {
+      driver -> driveBackwardLeft();
+    }
+    changeState(_POSITIONING);
+  }
+}
+
+void Parking::position() {
+  if (sensors -> getSpeed() < 0) {
+    if (sensors -> getDistanceRearCorner() < 10 ||
+        sensors -> getDistanceMiddleSide() < 5) {
+      driver -> driveForward();
+      delay(200);
+      driver -> driveForwardRight();
+    }
   } else {
-    if (m2 >= current && m1 <= current)
-      return true;
+    if (sensors -> getDistanceFront() < 6) {
+      driver -> driveForward();
+      delay(200);
+      driver -> driveBackwardLeft();
+    }
+  }
+  if (withinRange(sensors -> getUnsyncAngularDisplacement(), lastDirection, parkingDirection)) {
+    driver -> driveForward();
+    changeState(_MEASURING);
+  }
+}
+
+void Parking::measure() {
+  stop();
+  //changeState(_ALIGNING);
+}
+
+void Parking::align() {
+
+  changeState(_STOPPING);
+}
+
+void Parking::stop() {
+  driver  -> disableAutonomy();
+  sensors -> disableMonitor();
+  changeState(_IDLING);
+}
+
+int Parking::getTarget(int x, int y) {
+  return atan2(sin(x-y), cos(x-y));
+}
+
+bool Parking::withinRange(int min, int max, int target) {
+  if (min > max) {
+    int temp = max;
+    max = min;
+    min = temp;
+  }
+
+  if (max - min > 180) {
+    if ((target >= 0 && target <= min) ||
+        (target >= max && target <= 359))
+        return true;
+  } else {
+      if (target >= min && target <= max)
+        return true;
   }
   return false;
 }

@@ -60,12 +60,14 @@ void Driver::stop() {
 
 void Driver::driveForward()          { drive( abs(speedValue),   0); }
 void Driver::driveBackward()         { drive(-abs(speedValue),   0); }
-void Driver::driveLeft()             { drive( abs(speedValue), -90); }
-void Driver::driveRight()            { drive( abs(speedValue),  90); }
-void Driver::driveForwardLeft( )     { drive( abs(speedValue), -75); }
-void Driver::driveBackwardLeft()     { drive(-abs(speedValue), -75); }
+void Driver::driveLeft()             { drive(abs(speedValue),  -90); }
+void Driver::driveRight()            { drive(abs(speedValue),   90); }
+void Driver::driveForwardLeft()      { drive( abs(speedValue), -75); }
+void Driver::driveBackwardLeft()     { drive(-abs(speedValue), -90); }
 void Driver::driveForwardRight()     { drive( abs(speedValue),  75); }
-void Driver::driveBackwardRight()    { drive(-abs(speedValue),  75); }
+void Driver::driveBackwardRight()    { drive(-abs(speedValue),  90); }
+
+
 
 void Driver::enableAutonomy()        { autonomous =  true; stop(); }
 void Driver::disableAutonomy()       { autonomous = false; stop(); }

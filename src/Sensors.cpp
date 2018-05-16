@@ -2,17 +2,19 @@
 
 void Sensors::begin(Car* reference) {
   car = reference;
-  sonicBB.attach(_TRIGGER_PIN_BB, _ECHO_PIN_BB); //trigger pin, echo pin
-  sonicBR.attach(_TRIGGER_PIN_BR, _ECHO_PIN_BR); //trigger pin, echo pin
-  sonicFR.attach(_TRIGGER_PIN_FR, _ECHO_PIN_FR); //trigger pin, echo pin
+  sonicFront.attach(_TRIGGER_PIN_FRONT, _ECHO_PIN_FRONT); //trigger pin, echo pin
+  sonicRearCorner.attach(_TRIGGER_PIN_REAR_SIDE, _ECHO_PIN_REAR_SIDE); //trigger pin, echo pin
+  sonicFrontSide.attach(_TRIGGER_PIN_FRONT_SIDE, _ECHO_PIN_FRONT_SIDE); //trigger pin, echo pin
+  irMiddleSide.attach(_IR_PIN_MIDDLE_SIDE);
   odometerLeft.attach(_ODOMETER_PIN_L);
   odometerRight.attach(_ODOMETER_PIN_R);
   gyro.attach();
   delay(1500);
   gyro.begin(20);
-  odometerLeft.begin();
+  odometerLeft .begin();
   odometerRight.begin();
   car->begin(odometerLeft, odometerRight, gyro);
+  pinMode(_SIREN_PIN, OUTPUT);
   updateSensors();
   updateTimer = millis();
 }
@@ -20,7 +22,7 @@ void Sensors::begin(Car* reference) {
 void Sensors::update() {
   gyro.update();
   unsigned long timer = millis();
-  if (timer >= 60 + updateTimer) {
+  if (timer >= 80 + updateTimer) {
     updateTimer = timer;
     updateSensors();
   }
@@ -28,17 +30,26 @@ void Sensors::update() {
 }
 
 void Sensors::updateSensors() {
-    distanceFR = sonicFR.getMedianDistance(3);
-    distanceBR = sonicBR.getMedianDistance(3);
-    distanceBB = sonicBB.getMedianDistance(3);
+    distanceFront      = sonicFront.getMedianDistance(3);
+    distanceRearCorner = sonicRearCorner.getMedianDistance(3);
+    distanceFrontSide  = sonicFrontSide.getMedianDistance(3);
+    distanceMiddleSide = irMiddleSide.getMedianDistance(3);
+    if (distanceMiddleSide == 0)
+      distanceMiddleSide = 70;
+    else if (distanceMiddleSide >= 12)
+      distanceMiddleSide = distanceMiddleSide - 12;
     distanceL  = odometerLeft .getDistance();
     distanceR  = odometerRight.getDistance();
     gyroAngle  = gyro.getAngularDisplacement();
 }
 
-unsigned int Sensors::getDistanceFR()                { return distanceFR; }
-unsigned int Sensors::getDistanceBR()                { return distanceBR; }
-unsigned int Sensors::getDistanceBB()                { return distanceBB; }
+int Sensors::getSpeed() { return car -> getSpeed(); }
+
+unsigned int Sensors::getDistanceFront()      { return distanceFront;      }
+unsigned int Sensors::getDistanceFrontSide()  { return distanceFrontSide;  }
+unsigned int Sensors::getDistanceRearCorner() { return distanceRearCorner; }
+unsigned int Sensors::getDistanceMiddleSide() { return distanceMiddleSide; }
+
 unsigned int Sensors::getAngularDisplacement()       { return  gyroAngle; }
 unsigned int Sensors::getUnsyncAngularDisplacement() {
   return gyro.getAngularDisplacement();
@@ -74,7 +85,7 @@ void Sensors::resetMonitor() {
 
 void Sensors::monitor() {
   if (monitoring) {
-    unsigned int  currentDepth = (distanceBR == 0) ? 70 : distanceBR;
+    unsigned int  currentDepth = (distanceMiddleSide == 0) ? 70 : distanceMiddleSide;
     if (currentDepth < 15) {
       sectorStart = getOdometerAvgDistance();
       sectorEnd   = sectorStart;
@@ -94,13 +105,23 @@ bool Sensors::isClearSector() {
   return (distance >= 100) ? true : false;
 }
 
+void Sensors::sirenOn() {
+  analogWrite(_SIREN_PIN, 254);
+}
+
+void Sensors::sirenOff() {
+  analogWrite(_SIREN_PIN, 0);
+}
+
 void Sensors::debug() {
-  String sensorData = "FR, BR, BB, oL, oR, gyro: ";
-  sensorData += distanceFR;
+  String sensorData = "F, FS, MS, RC, oL, oR, gyro:\t";
+  sensorData += distanceFront;
   sensorData += "\t";
-  sensorData += distanceBR;
+  sensorData += distanceFrontSide;
   sensorData += "\t";
-  sensorData += distanceBB;
+  sensorData += distanceMiddleSide;
+  sensorData += "\t";
+  sensorData += distanceRearCorner;
   sensorData += "\t";
   sensorData += distanceL;
   sensorData += "\t";

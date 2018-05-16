@@ -7,7 +7,8 @@ void setup()
   sensors.begin(&car);
   driver.begin(&car, &sensors);
   parking.begin(&driver, &sensors);
-  remoteControl.begin(&driver, &parking);
+  remoteControl.begin(&driver, &parking, &sensors);
+
 }
 
 void loop()
