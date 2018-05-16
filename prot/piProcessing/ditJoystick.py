@@ -74,10 +74,10 @@ class Joystick(mp.Process):
         self.size = [500, 700]
         self.screen = pygame.display.set_mode(self.size)
         pygame.display.set_caption("Joystick output")
+        self.done = False
         self.clock = pygame.time.Clock()
         pygame.joystick.init()
         self.textPrint = TextPrint()
-        self.done = False
         #self.processJoystick()
 
     def buttonInput(self, button):
@@ -197,8 +197,8 @@ class Joystick(mp.Process):
                 for i in range( buttons ):
                     button = joystick.get_button( i )
                     self.textPrint.printS(self.screen, "Button {:>2} value: {}".format(i,button) )
-                    #if(button == 1):
-                    #    self.buttonInput(i);
+                    if(button == 1):
+                        self.buttonInput(i);
                 self.textPrint.unindent()
                     
                 # Hat switch. All or nothing for direction, not like joysticks.
@@ -210,8 +210,8 @@ class Joystick(mp.Process):
                 for i in range( hats ):
                     hat = joystick.get_hat( i )
                     self.textPrint.printS(self.screen, "Hat {} value: {}".format(i, str(hat)))
-                    #if(hat != (0, 0)):
-                    #   self.hatInput(i, hat)
+                    if(hat != (0, 0)):
+                       self.hatInput(i, hat)
                 self.textPrint.unindent()
                 
                 self.textPrint.unindent()
@@ -228,6 +228,7 @@ class Joystick(mp.Process):
         # Close the window and quit.
         # If you forget this line, the program will 'hang'
         # on exit if running from IDLE.
+
         pygame.quit ()
         
     #def start(self):
@@ -236,7 +237,7 @@ class Joystick(mp.Process):
     #    print("Thread Started")
 
 try:
-        serial_arduino = serial.Serial('/dev/ttyAMA0', 9600)
+        serial_arduino = serial.Serial('/dev/ttyACM0', 9600)
 except Exception:
         serial_arduino = serial.Serial('/dev/ttyACM1', 9600)
 
