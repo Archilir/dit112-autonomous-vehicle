@@ -8,6 +8,13 @@ import threading
 import serial
 import logging
 import multiprocessing as mp
+
+class ContourRectangle():
+
+    def __init__(self, shape, rectangle):
+        self.shape = shape
+        self.rectangle = rectangle
+        
 class Camera(mp.Process):
 
     #Initialize camera
@@ -19,7 +26,17 @@ class Camera(mp.Process):
 
     #Use an array of pixels for better performance
     camera_array = PiRGBArray(camera, size=(320, 240))
-    
+
+    #color boundaries
+    lower_green = np.array([50, 100, 100])
+    upper_green = np.array([70, 255, 255])
+
+    lower_blue = np.array([100, 99, 2])
+    upper_blue = np.array([120, 119, 82])
+
+    lower_red = np.array([82, 53, 179])
+    upper_red = np.array([102, 73, 259])
+                
     def __init__(self, serial):
         #mp.Process.__init__(self)
         self.serial = serial
@@ -67,28 +84,23 @@ class Camera(mp.Process):
 
             #Call the method we made above to decide what the shape of a contour is
             thishape = self.shape_compare(c)
-            if(cv.contourArea(c)>100):
+            if(cv.contourArea(c)>120):
                 cv.drawContours(frame, [c], -1, (0, 255, 0), 2)
                         
                 cv.putText(frame, thishape, (cX - 20, cY - 20),
                 cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
                 if(thishape != "none"):
-                    lst.append(thishape)
+                    x, y, w, h = cv.boundingRect(c)
+                    roi = frame[y:y+h, x:x+h]
+                    lst.append(ContourRectangle(thishape, roi))
         return lst
-    def detectColor(self, mask_green, mask_blue, mask_red):
-        colors = [0, 0, 0]
+    def detectColor(self, mask_green, mask_blue, mask_red, color):
         green = cv.countNonZero(mask_green)
         blue = cv.countNonZero(mask_blue)
         red = cv.countNonZero(mask_red)
-        if(green > 100):
-            colors[0] = 1
-        if(blue > 100):
-            colors[1] = 1
-        if(red > 100):
-            colors[2] = 1
-        return colors
+        
 
-    def detectSign(self, color, shape, serial):
+    def detectSign2(self, color, shape, serial):
         for s in shape:
             if(s == "triangle" and color[1] == 1):
                 serial.write('A'.encode())
@@ -98,6 +110,37 @@ class Camera(mp.Process):
                 serial.write('C'.encode())
             elif(s == "stop sign" and color[2] == 1):
                 serial.write('D'.encode())
+
+    def detectSign(self, shapes, serial):
+        for s in shapes:
+            if(s.shape == "triangle"):
+                hsv = cv.cvtColor(s.rectangle, cv.COLOR_BGR2HSV)
+                mask = cv.inRange(hsv, Camera.lower_blue, Camera.upper_blue)
+                if(cv.countNonZero(mask) > 130):
+                    serial.write('A'.encode())
+                    print("blue triangle")
+            elif(s.shape == "square"):
+                hsv = cv.cvtColor(s.rectangle, cv.COLOR_BGR2HSV)
+                mask = cv.inRange(hsv, Camera.lower_green, Camera.upper_green)
+                if(cv.countNonZero(mask) > 130):
+                    serial.write('B'.encode())
+                    print("green square")
+            elif(s.shape == "rectangle"):
+                img_inv = cv.bitwise_not(s.rectangle)
+                hsv = cv.cvtColor(img_inv, cv.COLOR_BGR2HSV)
+                mask = cv.inRange(hsv, Camera.lower_red, Camera.upper_red)
+                if(cv.countNonZero(mask) > 130):
+                    serial.write('C'.encode())
+                    print("red rectangle")
+            else:
+                img_inv = cv.bitwise_not(s.rectangle)
+                hsv = cv.cvtColor(img_inv, cv.COLOR_BGR2HSV)
+                mask = cv.inRange(hsv, Camera.lower_red, Camera.upper_red)
+                if(cv.countNonZero(mask) > 130):
+                    serial.write('D'.encode())
+                    print("stop sign")
+                
+                
         
     def processCamera(self):
         time.sleep(0.1)
@@ -123,29 +166,18 @@ class Camera(mp.Process):
                 #Find these contours based on the threshhold
                 _, contours, _ = cv.findContours(thresh.copy(), cv.RETR_TREE,
                         cv.CHAIN_APPROX_SIMPLE)
-                #
-                #check color
-                #define range of color
-                lower_green = np.array([50, 100, 100])
-                upper_green = np.array([70, 255, 255])
-
-                lower_blue = np.array([230, 100, 100])
-                upper_blue = np.array([250, 255, 255])
-
-                lower_red = np.array([80, 70, 50])
-                upper_red = np.array([100, 255, 255])
                 
                 #threshhold the hsv image to get only green
-                mask_green = cv.inRange(hsv, lower_green, upper_green)
-                mask_blue = cv.inRange(hsv, lower_blue, upper_blue)
-                mask_red = cv.inRange(hsv_inv, lower_red, upper_red)
+                #mask_green = cv.inRange(hsv, lower_green, upper_green)
+                #mask_blue = cv.inRange(hsv, lower_blue, upper_blue)
+                #mask_red = cv.inRange(hsv_inv, lower_red, upper_red)
             
                 #bitwise-AND mask and original image
                 #res = cv.bitwise_and(img, img, mask= mask)
 
                 #
                 #checks whether a stop sign and a color are detected. If they are, writes to serial.
-                self.detectSign(self.detectColor(mask_green, mask_blue, mask_red), self.detectShapes(img, contours), self.serial)
+                self.detectSign(self.detectShapes(img, contours), serial)
                 #
                 #draw images & contours
                 

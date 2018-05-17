@@ -43,11 +43,11 @@ for frame in camera.capture_continuous(camera_array, format="bgr", use_video_por
     lower_green = np.array([50, 100, 100])
     upper_green = np.array([70, 255, 255])
 
-    lower_blue = np.array([230, 100, 100])
-    upper_blue = np.array([250, 255, 255])
+    lower_blue = np.array([100, 99, 2])
+    upper_blue = np.array([120, 119, 82])
 
-    lower_red = np.array([80, 70, 50])
-    upper_red = np.array([100, 255, 255])
+    lower_red = np.array([82, 53, 179])
+    upper_red = np.array([102, 73, 259])
                 
     #threshhold the hsv image to get only green
     mask_green = cv.inRange(hsv, lower_green, upper_green)
@@ -55,8 +55,9 @@ for frame in camera.capture_continuous(camera_array, format="bgr", use_video_por
     mask_red = cv.inRange(hsv_inv, lower_red, upper_red)
 
     #cv.imshow("Green", mask_green)
-    cv.imshow("Blue", mask_blue)
-    #cv.imshow("Red", mask_red)
+    #cv.imshow("Blue", mask_blue)
+    #cv.imshow("Inv", img)
+    cv.imshow("Red", mask_red)
     
     camera_array.truncate(0)
     key = cv.waitKey(1) & 0xFF
