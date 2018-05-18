@@ -134,6 +134,11 @@ bool Sensors::isSectorViable() {
   return (distance >= 40) ? true : false;
 }
 
+bool Sensors::passingObstacle() {
+  unsigned long distance = sectorEnd - sectorStart;
+  return (distance <= 1) ? true : false;
+}
+
 bool Sensors::isClearSector() {
   unsigned long distance = sectorEnd - sectorStart;
   return (distance >= 100) ? true : false;

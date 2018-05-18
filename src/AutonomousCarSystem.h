@@ -39,6 +39,7 @@ class Sensors
     void debug();
 
     void updateRearCorner();
+    bool passingObstacle();
 
   private:
     Car *car;
@@ -90,6 +91,10 @@ class Driver
     void disableAutonomy();
     bool isAutonomous();
 
+    void enableAlignment();
+    void disableAlignment();
+    bool isAligning();
+
     void setSpeed(int);
     void setAngle(int);
     int  getSpeed();
@@ -108,6 +113,8 @@ class Driver
     void driveBackwardLeft();
     void driveForwardRight();
     void driveBackwardRight();
+    void driveCorrectLeft();
+    void driveCorrectRight();
 
     void enableTrackingCourse();
     void disableTrackingCourse();
@@ -131,11 +138,13 @@ class Driver
 
     bool autonomous      = false,
          correctingDrift = false,
-         trackingCourse  = false;
+         trackingCourse  = false,
+         aligning        = false;
 
     void steer();
     void drive();
     void boost();
+    void align();
 };
 
 
