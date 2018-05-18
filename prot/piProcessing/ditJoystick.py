@@ -152,10 +152,10 @@ class Joystick(mp.Process):
             self.serial.write('v'.encode())
 
         elif(button == Joystick.BUTTON_L1):
-            self.serial.write('X'.encode())
+            self.serial.write(struct.pack('!b',103))
 
         elif(button == Joystick.BUTTON_R1):
-            self.serial.write('X'.encode())
+            self.serial.write(struct.pack('!b',104))
 
         elif(button == Joystick.BUTTON_L2):
             self.serial.write('X'.encode())
@@ -203,15 +203,35 @@ class Joystick(mp.Process):
         value = math.ceil(pos*100)
         if(axis == Joystick.AXIS_LEFT_X):
             if(value != self.prevValue[Joystick.AXIS_LEFT_X]):
-                self.prevValue[Joystick.AXIS_LEFT_X] = value
-                self.serial.write('N'.encode())
-                self.serial.write(struct.pack('!b', int(-value)))
+                self.prevValue[Joystick.AXIS_LEFT_X] = -value
+                if(-value < 0):
+                    self.serial.write(struct.pack('!b', 112))
+                    self.serial.write(struct.pack('!b', int(value)))
+
+                elif(value == 0):
+                    self.serial.write(struct.pack('!b', 111))
+
+                elif(-value > 0):
+                    self.serial.write(struct.pack('!b', 110))
+                    self.serial.write(struct.pack('!b', int(-value)))
+                #self.serial.write(struct.pack('!b', 101))
+                #self.serial.write(struct.pack('!b', int(-value)))
                               
         elif(axis == Joystick.AXIS_LEFT_Y):
             if(value != self.prevValue[Joystick.AXIS_LEFT_Y]):
-                self.prevValue[Joystick.AXIS_LEFT_Y] = value
-                self.serial.write('M'.encode())
-                self.serial.write(struct.pack('!b', int(-value)))
+                self.prevValue[Joystick.AXIS_LEFT_Y] = -value
+                if(-value < 0):
+                    self.serial.write(struct.pack('!b', 120))
+                    self.serial.write(struct.pack('!b', int(value)))
+
+                elif(value == 0):
+                    self.serial.write(struct.pack('!b', 121))
+
+                elif(-value > 0):
+                    self.serial.write(struct.pack('!b', 122))
+                    self.serial.write(struct.pack('!b', int(-value)))
+                #self.serial.write(struct.pack('!b', 102))
+                #self.serial.write(struct.pack('!b', int(-value)))
                               
         elif(axis == Joystick.AXIS_RIGHT_X):
             if(value != self.prevValue[Joystick.AXIS_RIGHT_X]):
@@ -230,6 +250,7 @@ class Joystick(mp.Process):
            self.prevValue[Joystick.AXIS_LEFT_Y] > -0.06 and self.prevValue[Joystick.AXIS_LEFT_Y] < 0.06):
             self.prevValue[Joystick.AXIS_LEFT_Y] = 0
             self.serial.write('S'.encode())
+        
             
     def processJoystick(self):
         logging.debug('Starting')
