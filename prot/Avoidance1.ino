@@ -11,8 +11,10 @@ enum states{
   _forward,
   _finish,
   _spin2,
-  _checkAngle2
-
+  _checkAngle2,
+  _adjust,
+  _measure,
+  _adjust2
 };
 GP2Y0A21 IR;
 SR04 sonicA;
@@ -39,7 +41,9 @@ const int IR_pin = A15;
 
 //bool state = true;
 int fa;
-
+int fb;
+int initialDegree;
+int b;
 
 void inita() {
 
@@ -53,11 +57,13 @@ Serial.println("f");
 
 void check() {
   Serial.println("u");
+  initialDegree= gyro.getAngularDisplacement();
 car.setMotorSpeed(-50,50);
 if (fa >= 90) {
 if (gyro.getAngularDisplacement() <= fa-90)
 {car.setSpeed(0);
-changeState(_spin);}
+fa = fa-90;
+changeState(_adjust);}
 }
 
 else {
@@ -65,64 +71,98 @@ else {
  if (gyro.getAngularDisplacement() >200) {
  if (gyro.getAngularDisplacement() <= 360-(-negativeread))
  {car.setSpeed(0);
-changeState(_spin);}
+ fa = 360-(-negativeread);
+  changeState(_adjust);
+ }
  }
 }
 }
 
+void adjust() {
+  if (fa>gyro.getAngularDisplacement())
+  {car.setMotorSpeed(40,-40);
+  }
+  if (fa<gyro.getAngularDisplacement())
+  {car.setMotorSpeed(-40,40);}
+  if ( fa == gyro.getAngularDisplacement()||fa == gyro.getAngularDisplacement()+1 || fa == gyro.getAngularDisplacement()-1||fa == gyro.getAngularDisplacement()+2 || fa == gyro.getAngularDisplacement()-2)
+  {car.setSpeed(0);
+Serial.println("FDAG");
+  changeState(_spin);
+  }
+
+}
 void spin(){
   car.setSpeed(40);
   if ((readRight >= 30 || readRight == 0)  && (IRread >=10 || IRread == 0 )) {
     car.setSpeed(0);
+    changeState(_measure);
 
- changeState(_forward);
   }
+
 }
 
+void takeMeasure2(){
+    fb = gyro.getAngularDisplacement();
+    changeState(_forward);
+
+}
 
 void forward() {
-  car.setMotorSpeed(70,-70);
-if (fa<269) {
-if (gyro.getAngularDisplacement() <= fa+90)
-{car.setSpeed(0);}
-changeState(_spin2); }
+car.setMotorSpeed(40,-40);
 
-  else {
-    int negativeread = fa - 360;
-    if (gyro.getAngularDisplacement()<200) {
-   if (gyro.getAngularDisplacement() >= -(-negativeread))
-      {car.setSpeed(0);
-      changeState(_spin2);}
-    }
-  }
+if (fb<269) {
+      b = fb+90;
+  if (gyro.getAngularDisplacement() >= (fb+90))
+  {car.setSpeed(0);
+  changeState(_adjust2);}
 }
+
+  else if (fb>=269) {
+    b = fb-269;
+    if (gyro.getAngularDisplacement()<200) {
+    if (gyro.getAngularDisplacement() >= b )
+    {
+      car.setSpeed(0);
+  changeState(_adjust2);
+    }
+    }
+}
+ }
+
+ void adjust2() {
+
+    if (b>gyro.getAngularDisplacement())
+  {car.setMotorSpeed(40,-40);
+  }
+  if (b<gyro.getAngularDisplacement())
+  {car.setMotorSpeed(-40,40);}
+  if ( b == gyro.getAngularDisplacement()||b == gyro.getAngularDisplacement()+1 || b == gyro.getAngularDisplacement()-1)
+  {car.setSpeed(0);
+  changeState(_spin2);
+  }
+
+ }
+
 void spin2(){
+        car.setSpeed(0);
+
+  bool dood = false;
+  if (dood == false) {
   car.setSpeed(50);
+  dood = true;}
+  if (dood= true) {
   if ((readRight >= 30 || readRight == 0)  && (IRread >=5 || IRread == 0 )) {
     car.setSpeed(0);
+    changeState(_checkAngle2);
   }
-  changeState(_checkAngle2);
+  }
+
 }
 
 
 void check2() {
-  Serial.println("u");
-car.setMotorSpeed(-70,70);
-if (fa >= 90) {
-if (gyro.getAngularDisplacement() <= fa-90)
-{car.setSpeed(0);
-changeState(_spin);}
 }
 
-else {
- int negativeread = fa-90;
- if (gyro.getAngularDisplacement() >200) {
- if (gyro.getAngularDisplacement() <= 360-(-negativeread))
- {car.setSpeed(0);
-}
- }
-}
-}
 
 
 void changeState(char newState) {
@@ -137,15 +177,14 @@ void finish() {
 
 void debug() {
   Serial.println(IRread);
+  Serial.println(initialDegree);
 }
 
 
 void takeRead() {
-
      fa = gyro.getAngularDisplacement();
-
-
 }
+
 
 
 
@@ -163,17 +202,18 @@ void setup() {
   sonicB.attach(44, 42);
   sonicC.attach(5, 4);
   IR.attach(A15);
-  gyro.begin(22);
+  gyro.begin(16);
 }
 
 void loop() {
+  gyro.update();
   IRread = IR.getMedianDistance(5);
   IRread = (IRread == 0) ? 70:IRread;
   IRread = (IRread >= 12) ? IRread-12:IRread;
   readRight = sonicB.getDistance();
   medianreadFront = sonicA.getMedianDistance(5);
   medianreadRight = sonicB.getMedianDistance(5);
-  gyro.update();
+
     Serial.println("d");
   debug();
 
@@ -191,12 +231,16 @@ void loop() {
 
   case _spin: spin(); break;
 
+  case _adjust: adjust(); break;
 
   case _spin2: spin2(); break;
 
   case _forward:forward(); break;
 
   case _finish:finish(); break;
+
+  case _measure:takeMeasure2(); break;
+  case _adjust2:adjust2(); break;
     }
 
 }
