@@ -38,6 +38,8 @@ class Sensors
     void monitor();
     void debug();
 
+    void updateRearCorner();
+
   private:
     Car *car;
     SR04 sonicFront, sonicFrontSide, sonicRear;
@@ -66,8 +68,8 @@ class Sensors
                    _ECHO_PIN_FRONT         = 43,
                    _ECHO_PIN_FRONT_SIDE    = 42,
                    _ECHO_PIN_REAR          =  4,
-                   _IR_PIN_MIDDLE_SIDE     = A8,
-                   _IR_PIN_REAR_CORNER     = A15,
+                   _IR_PIN_MIDDLE_SIDE     = A15,
+                   _IR_PIN_REAR_CORNER     = A14,
                    _ODOMETER_PIN_L         =  2,
                    _ODOMETER_PIN_R         =  3,
                    _SIREN_PIN              = A0,
@@ -96,6 +98,7 @@ class Driver
     void drive(int, int);
     void steer(int);
     void drive(int);
+    void halt();
 
     void driveForward();
     void driveBackward();
@@ -122,6 +125,7 @@ class Driver
     Sensors *sensors;
 
     int speedValue  = 0,
+        manualSpeedValue = speedValue,
         courseValue = 0,
         angleValue  = 0;
 
@@ -144,6 +148,8 @@ class Parking
     void monitor();
     int  getShortestDisplacement();
     void reverseParking();
+    bool isParking();
+
   private:
     Driver *driver;
     Sensors *sensors;
@@ -159,11 +165,20 @@ class Parking
       _MEASURING,
       _ALIGNING,
       _STOPPING,
+      _WAITING
+    };
+
+    enum {
+      _MOVE_SPEED = 30,
+      _TURN_SPEED = 35,
+      _TURN_ANGLE = 90
     };
 
     char parkingState = _IDLING;
 
     unsigned int lastDirection;
+    unsigned long timer;
+    char targetState;
 
     bool isViable(int);
     unsigned int parkingDirection,
@@ -183,7 +198,8 @@ class Parking
     void position();
     void measure();
     void align();
-
+    void wait(char, unsigned long);
+    void wait();
 
 };
 
@@ -192,11 +208,13 @@ class RemoteControl
   public:
     void begin(Driver*, Parking*, Sensors*);
     void listen();
+    void listenJoystick();
   private:
     Driver  *driver;
     Parking *parking;
     Sensors *sensors;
     char input;
+    int joystickInput;
     enum {
       _FORWARD      = 'F',
       _BACK         = 'B',
@@ -229,11 +247,16 @@ class RemoteControl
       _CAMERA_LEFT  = 'l',
       _CAMERA_RIGHT = 'r',
 
-      // Stick characters
-      _LEFT_X  = 'N',
-      _LEFT_Y  = 'M',
-      _RIGHT_X = 'O',
-      _RIGHT_Y = 'P'
+      // Joystick
+      _LEFT_X_NEGATIVE  = 110,
+      _LEFT_X_NEUTRAL   = 111,
+      _LEFT_X_POSITIVE  = 112,
+      _LEFT_Y_NEGATIVE  = 120,
+      _LEFT_Y_NEUTRAL   = 121,
+      _LEFT_Y_POSITIVE  = 122,
+
+      _J_SIREN_ON       = 103,
+      _J_SIREN_OFF      = 104
     };
 
     enum {
@@ -245,8 +268,10 @@ class RemoteControl
     };
 
     char controlState = _STANDARD;
+    int  pollJoystick();
     void standardScheme(char);
     void manualControl(char);
+    void joystickScheme(int);
 };
 
 #endif

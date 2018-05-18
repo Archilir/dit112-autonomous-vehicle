@@ -16,7 +16,8 @@ void loop()
   sensors.update();
   //sensors.debug();
   remoteControl.listen();
-  //parking.monitor();
+  remoteControl.listenJoystick();
+  parking.monitor();
   driver.update();
 
 }

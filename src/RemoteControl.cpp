@@ -8,58 +8,31 @@ void RemoteControl::begin(Driver* driverRef, Parking* parkingRef, Sensors* senso
 }
 
 void RemoteControl::listen() {
-  if (Serial3.available() || Serial.available()) {
-    if (Serial.available())
-      input = Serial.read();
-    else if (Serial3.available())
-      input = Serial3.read();
-
-    if (controlState == _STANDARD) {
-      switch (input) {
-        case _LEFT_X:  sensors -> disableSensors(); controlState = _STICK_LEFT_X;  break;
-        case _LEFT_Y:  sensors -> disableSensors(); controlState = _STICK_LEFT_Y;  break;
-        //case _RIGHT_X: controlState = _STICK_RIGHT_X; break;
-        //case _RIGHT_Y: controlState = _STICK_RIGHT_Y; break;
-        default: standardScheme(input);
-      }
-    } else {
-      switch (controlState) {
-        case _STICK_LEFT_X:
-          driver -> steer(input);
-          controlState = _STANDARD;
-          sensors -> enableSensors();
-          break;
-
-        case _STICK_LEFT_Y:
-          driver -> drive(input);
-          controlState = _STANDARD;
-          sensors -> enableSensors();
-          break;
-
-        /*case _STICK_RIGHT_X:
-          controlState = _STANDARD;
-          break;
-
-        case _STICK_RIGHT_Y:
-          controlState = _STANDARD;
-          break;  */
-      }
-    }
+  if (Serial3.available()) {
+    input = Serial3.read();
+    standardScheme(input);
   }
 }
-/*
-void RemoteControl::joystickListen() {
+
+void RemoteControl::listenJoystick() {
   if (Serial.available()) {
-    input = Serial.read();
-    switch (input) {
-
+    switch (Serial.read()) {
+      case _LEFT_X_NEGATIVE: driver  -> steer(-pollJoystick()); break;
+      case _LEFT_X_POSITIVE: driver  -> steer( pollJoystick()); break;
+      case _LEFT_Y_NEGATIVE: driver  -> drive(-pollJoystick()); break;
+      case _LEFT_Y_POSITIVE: driver  -> drive( pollJoystick()); break;
+      case _LEFT_X_NEUTRAL : driver  -> steer(0);               break;
+      case _LEFT_Y_NEUTRAL : driver  -> drive(0);               break;
+      case _J_SIREN_ON     : sensors -> sirenOn();              break;
+      case _J_SIREN_OFF    : sensors -> sirenOff();             break;
     }
   }
 }
 
-void RemoteControl::leftStick() {
-
-}*/
+int RemoteControl::pollJoystick() {
+  while (!Serial.available()) {}
+  return Serial.read();
+}
 
 void RemoteControl::standardScheme(char input) {
   switch (input) {
@@ -100,8 +73,10 @@ void RemoteControl::standardScheme(char input) {
 }
 
 void RemoteControl::manualControl(char input) {
-  parking -> stop();
-  driver -> disableAutonomy();
+  if (parking -> isParking())
+    parking -> stop();
+  if (driver -> isAutonomous())
+    driver -> disableAutonomy();
 
   switch (input) {
     case _FORWARD:

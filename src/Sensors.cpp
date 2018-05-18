@@ -11,7 +11,7 @@ void Sensors::begin(Car* reference) {
   odometerRight.attach(_ODOMETER_PIN_R);
   gyro.attach();
   delay(1500);
-  gyro.begin(20);
+  gyro.begin(16);
   odometerLeft .begin();
   odometerRight.begin();
   car->begin(odometerLeft, odometerRight, gyro);
@@ -46,22 +46,34 @@ bool Sensors::isEnabled() {
 
 void Sensors::updateSensors() {
     distanceFront      = sonicFront.getMedianDistance(3);
+    if (distanceFront == 0) distanceFront = 70;
+
     distanceRear       = sonicRear.getMedianDistance(3);
+    if (distanceRear == 0) distanceRear = 70;
+
     distanceFrontSide  = sonicFrontSide.getMedianDistance(3);
-    distanceMiddleSide = irMiddleSide.getMedianDistance(3);
-    if (distanceMiddleSide == 0)
-      distanceMiddleSide = 70;
-    else if (distanceMiddleSide >= 12)
-      distanceMiddleSide = distanceMiddleSide - 12;
-    distanceRearCorner = irRearCorner.getMedianDistance(3);
-    if (distanceRearCorner == 0)
-      distanceRearCorner = 70;
-    else if (distanceRearCorner >= 12)
-      distanceRearCorner = distanceRearCorner - 12;
+    if (distanceFrontSide == 0) distanceFrontSide = 70;
+
+    //distanceMiddleSide = irMiddleSide.getMedianDistance(3);
+    distanceMiddleSide = irMiddleSide.getDistance();
+    if (distanceMiddleSide == 0) distanceMiddleSide = 70;
+    else if (distanceMiddleSide >= 12) distanceMiddleSide = distanceMiddleSide - 12;
+
+    updateRearCorner();
 
     distanceL  = odometerLeft .getDistance();
     distanceR  = odometerRight.getDistance();
     gyroAngle  = gyro.getAngularDisplacement();
+}
+
+void Sensors::updateRearCorner() {
+  distanceRearCorner   = irRearCorner.getDistance();
+  //distanceRearCorner = irRearCorner.getMedianDistance(3);
+
+  if (distanceRearCorner == 0)
+    distanceRearCorner = 70;
+  else if (distanceRearCorner >= 12)
+    distanceRearCorner = distanceRearCorner - 12;
 }
 
 int Sensors::getSpeed() { return car -> getSpeed(); }
@@ -136,7 +148,7 @@ void Sensors::sirenOff() {
 }
 
 void Sensors::debug() {
-  String sensorData = "F, FS, MS, RC, oL, oR, gyro:\t";
+  String sensorData = "F, FS, MS, RC, R, oL, oR, gyro:\t";
   sensorData += distanceFront;
   sensorData += "\t";
   sensorData += distanceFrontSide;
@@ -144,6 +156,8 @@ void Sensors::debug() {
   sensorData += distanceMiddleSide;
   sensorData += "\t";
   sensorData += distanceRearCorner;
+  sensorData += "\t";
+  sensorData += distanceRear;
   sensorData += "\t";
   sensorData += distanceL;
   sensorData += "\t";

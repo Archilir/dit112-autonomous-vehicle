@@ -41,15 +41,16 @@ void Driver::drive() {
     boost();
   }
   if (speedValue != car -> getSpeed())
-      car -> setSpeed(speedValue);
+    car -> setSpeed(speedValue);
 }
+
 void Driver::boost() {
-  if (speedValue != 0 && speedValue != 100 && speedValue != -100) {
+  if (speedValue != 100 && speedValue != -100 && speedValue != 0) {
     if (speedValue > 0)
       car -> setSpeed( 100);
     else
       car -> setSpeed(-100);
-    delay(10);
+    delay(20);
   }
 }
 
@@ -69,8 +70,18 @@ void Driver::driveBackwardRight()    { drive(-abs(speedValue),  90); }
 
 
 
-void Driver::enableAutonomy()        { autonomous =  true; stop(); }
-void Driver::disableAutonomy()       { autonomous = false; stop(); }
+void Driver::enableAutonomy() {
+  autonomous =  true;
+  manualSpeedValue = speedValue;
+  stop();
+}
+
+void Driver::disableAutonomy() {
+  autonomous = false;
+  speedValue = manualSpeedValue;
+  stop();
+}
+
 bool Driver::isAutonomous()          { return  autonomous; }
 
 void Driver::setCourse(int course)   { courseValue    = course; }
