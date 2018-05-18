@@ -191,7 +191,7 @@ void carAlign(){
         car.setSpeed(0);
        }
     }
-    else{
+    else {
        if(car.getSpeed() != 30) {
         car.setSpeed(30);
        }
