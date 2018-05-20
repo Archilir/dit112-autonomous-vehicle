@@ -47,7 +47,7 @@ class Sensors
     GP2Y0A21 irMiddleSide, irRearCorner;
     Odometer  odometerLeft  = Odometer(188),
               odometerRight = Odometer(188);
-    Gyroscope gyro          = Gyroscope(22);
+    Gyroscope gyro          = Gyroscope(17);
 
     bool sensorsEnabled = true;
     unsigned int   distanceFront,
@@ -264,8 +264,30 @@ class RemoteControl
       _LEFT_Y_NEUTRAL   = 121,
       _LEFT_Y_POSITIVE  = 122,
 
+      _RIGHT_X_NEGATIVE = 130,
+      _RIGHT_X_NEUTRAL  = 131,
+      _RIGHT_X_POSITIVE = 132,
+
+      _J_STOP           = 101,
       _J_SIREN_ON       = 103,
-      _J_SIREN_OFF      = 104
+      _J_SIREN_OFF      = 104,
+      _J_PARKING_ON     = 105,
+      _J_PARKING_OFF    = 106,
+
+      _J_FORWARD        = 141,
+      _J_BACK           = 142,
+      _J_LEFT           = 143,
+      _J_RIGHT          = 144,
+
+      // Signs
+      _S_BLUE_TRIANGLE  = 191,
+      _S_GREEN_SQUARE   = 192,
+      _S_RED_RECTANGLE  = 193,
+      _S_STOP_SIGN      = 194
+
+      //
+
+
     };
 
     enum {

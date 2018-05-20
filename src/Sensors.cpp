@@ -11,7 +11,7 @@ void Sensors::begin(Car* reference) {
   odometerRight.attach(_ODOMETER_PIN_R);
   gyro.attach();
   delay(1500);
-  gyro.begin(16);
+  gyro.begin(20);
   odometerLeft .begin();
   odometerRight.begin();
   car->begin(odometerLeft, odometerRight, gyro);
@@ -55,7 +55,7 @@ void Sensors::updateSensors() {
     if (distanceFrontSide == 0) distanceFrontSide = 70;
 
     //distanceMiddleSide = irMiddleSide.getMedianDistance(3);
-    distanceMiddleSide = irMiddleSide.getDistance();
+    distanceMiddleSide = irMiddleSide.getMedianDistance(3);
     if (distanceMiddleSide == 0) distanceMiddleSide = 70;
     else if (distanceMiddleSide >= 12) distanceMiddleSide = distanceMiddleSide - 12;
 
@@ -67,7 +67,7 @@ void Sensors::updateSensors() {
 }
 
 void Sensors::updateRearCorner() {
-  distanceRearCorner   = irRearCorner.getDistance();
+  distanceRearCorner   = irRearCorner.getMedianDistance(3);
   //distanceRearCorner = irRearCorner.getMedianDistance(3);
 
   if (distanceRearCorner == 0)
@@ -120,7 +120,7 @@ void Sensors::resetMonitor() {
 void Sensors::monitor() {
   if (monitoring) {
     unsigned int  currentDepth = (distanceMiddleSide == 0) ? 70 : distanceMiddleSide;
-    if (currentDepth < 15) {
+    if (currentDepth <= 15) {
       sectorStart = getOdometerAvgDistance();
       sectorEnd   = sectorStart;
     } else {
@@ -131,9 +131,13 @@ void Sensors::monitor() {
 
 bool Sensors::isSectorViable() {
   unsigned long distance = sectorEnd - sectorStart;
+  Serial.print("isSectorViable:\t");
+  Serial.print(distance);
+  Serial.print('\t');
   return (distance >= 40) ? true : false;
 }
 
+/*
 bool Sensors::passingObstacle() {
   unsigned long distance = sectorEnd - sectorStart;
   return (distance <= 1) ? true : false;
@@ -143,6 +147,7 @@ bool Sensors::isClearSector() {
   unsigned long distance = sectorEnd - sectorStart;
   return (distance >= 100) ? true : false;
 }
+*/
 
 void Sensors::sirenOn() {
   analogWrite(_SIREN_PIN, 254);

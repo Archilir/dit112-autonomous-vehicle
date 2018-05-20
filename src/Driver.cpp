@@ -118,7 +118,7 @@ void Driver::align() {
 
 void Driver::enableAutonomy() {
   autonomous =  true;
-  aligning   =  true;
+  //aligning   =  true;
   manualSpeedValue = speedValue;
 
   stop();
@@ -126,7 +126,7 @@ void Driver::enableAutonomy() {
 
 void Driver::disableAutonomy() {
   autonomous = false;
-  aligning   = false;
+  //aligning   = false;
   speedValue = manualSpeedValue;
   stop();
 }
@@ -145,25 +145,43 @@ void Driver::enableDriftCorrection()  {
   courseValue = sensors -> getUnsyncAngularDisplacement();
   correctingDrift =  true;
 }
+
 void Driver::disableDriftCorrection() { correctingDrift = false; }
 bool Driver::isDriftCorrecting()      { return  correctingDrift; }
 void Driver::driftCorrection(int course, int currentDirection) {
+  /*Serial.print("Course, Direction, Diff, Angle:\t");
+  Serial.print(course);
+  Serial.print('\t');
+  Serial.print(currentDirection);
+  Serial.print('\t');*/
   int diff = (course - currentDirection + 360) % 360;
+  /*Serial.print(diff);
+  Serial.print('\t');*/
   if (diff == 0) {
     course = 0;
   }
   else if (diff < 180) {
-    if (car -> getSpeed() > 0)
-      course = (diff >   4) ?  90 :  1;
-    else
-      course = (diff >   4) ? -90 : -1;
+    if (car -> getSpeed() > 0) {
+      course = (diff > 4) ?  45  :  1;
+      //course = (diff > 90) ?  90 :  diff;
+    } else
+    if (car -> getSpeed() < 0) {
+      course = (diff > 4) ? -45 : - 1;
+      //course = (diff > 90) ? -90 : -diff;
+    }
   }
   else if (diff > 180) {
-    if (car -> getSpeed() > 0)
-      course = (diff < 356) ? -90 : -1;
-    else
-      course = (diff < 356) ?  90 :  1;
+      //int val = 360 - diff;
+    if (car -> getSpeed() > 0) {
+      course = (diff < 355) ? -45 : -1;
+      //course = (val > 90) ? -90 : -val;
+    } else
+    if (car -> getSpeed() < 0) {
+      course = (diff < 355) ?  45 :  1;
+      //course = (val > 90) ?  90 :  val;
+    }
   }
+  //Serial.println(course);
   steer(course);
   /*Serial.print("Current Direction, Course, Diff:");
   Serial.print('\t');

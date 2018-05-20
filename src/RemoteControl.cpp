@@ -17,14 +17,45 @@ void RemoteControl::listen() {
 void RemoteControl::listenJoystick() {
   if (Serial.available()) {
     switch (Serial.read()) {
-      case _LEFT_X_NEGATIVE: driver  -> steer(-pollJoystick()); break;
-      case _LEFT_X_POSITIVE: driver  -> steer( pollJoystick()); break;
-      case _LEFT_Y_NEGATIVE: driver  -> drive(-pollJoystick()); break;
-      case _LEFT_Y_POSITIVE: driver  -> drive( pollJoystick()); break;
-      case _LEFT_X_NEUTRAL : driver  -> steer(0);               break;
-      case _LEFT_Y_NEUTRAL : driver  -> drive(0);               break;
-      case _J_SIREN_ON     : sensors -> sirenOn();              break;
-      case _J_SIREN_OFF    : sensors -> sirenOff();             break;
+      case _LEFT_X_NEGATIVE : driver  -> steer(-pollJoystick()); break;
+      case _LEFT_X_NEUTRAL  : driver  -> steer(0);               break;
+      case _LEFT_X_POSITIVE : driver  -> steer( pollJoystick()); break;
+
+      case _LEFT_Y_NEGATIVE :
+        /*if (driver -> getAngle() == 0) {
+          driver -> disableTrackingCourse();
+          driver -> enableDriftCorrection();
+        }*/
+
+        driver  -> drive(-pollJoystick());
+        break;
+
+      case _LEFT_Y_NEUTRAL  : standardScheme(_STOP);             break;
+
+      case _LEFT_Y_POSITIVE :
+        driver -> disableTrackingCourse();
+        driver -> enableDriftCorrection();
+        driver  -> drive( pollJoystick());
+        break;
+
+      case _RIGHT_X_NEGATIVE: break;
+      case _RIGHT_X_NEUTRAL : break;
+      case _RIGHT_X_POSITIVE: break;
+      case _J_STOP          : standardScheme(_STOP);             break;
+      case _J_SIREN_ON      : standardScheme(_AUX_3_ON);         break;
+      case _J_SIREN_OFF     : standardScheme(_AUX_3_OFF);        break;
+      case _J_PARKING_ON    : standardScheme(_AUX_4_ON);         break;
+      case _J_PARKING_OFF   : standardScheme(_AUX_4_OFF);        break;
+      case _J_FORWARD       : standardScheme(_FORWARD);          break;
+      case _J_BACK          : standardScheme(_BACK);             break;
+      case _J_LEFT          : standardScheme(_LEFT);             break;
+      case _J_RIGHT         : standardScheme(_RIGHT);            break;
+
+      // Signs
+      case _S_BLUE_TRIANGLE : break;
+      case _S_GREEN_SQUARE  : break;
+      case _S_RED_RECTANGLE : break;
+      case _S_STOP_SIGN     : standardScheme(_STOP);             break;
     }
   }
 }

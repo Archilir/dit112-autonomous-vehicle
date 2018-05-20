@@ -89,16 +89,24 @@ void Parking::start() {
 }
 
 void Parking::search() {
-  if (sensors -> isSectorViable()) {
+  bool test = sensors -> isSectorViable();
+  if (test) {
     driver -> stop();
+    driver -> disableDriftCorrection();
     delay(1000);
     parkingDirection = sensors -> getUnsyncAngularDisplacement();
     course = getNewDisplacement(parkingDirection, -45);
-    driver -> disableDriftCorrection();
+
     //driver -> driveBackwardRight();
     driver -> drive(-_TURN_SPEED, _TURN_ANGLE);
     changeState(_ENTERING);
   }
+  Serial.print(test);
+  Serial.print('\t');
+  Serial.print(sensors -> getOdometerLeftDistance());
+  Serial.print('\t');
+  Serial.println(sensors -> getOdometerRightDistance());
+
 }
 
 void Parking::enter() {
