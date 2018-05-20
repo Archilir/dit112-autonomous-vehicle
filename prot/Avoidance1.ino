@@ -17,7 +17,9 @@ enum states{
   _thirdAdjust,
   _jesus,
   _thirdTurn,
-  _secondAdjust
+  _secondAdjust,
+  _firstAdjust
+
 
 };
 GP2Y0A21 IR;
@@ -27,6 +29,7 @@ SR04 sonicC;
 int medianreadFront = 0;
 int medianreadRight = 0;
 int medianreadBack = 0;
+int secondAdjustint;
 int readRight = 0;
 int readFront = 0;
 int IRread;
@@ -51,9 +54,9 @@ bool delay1 = true;
 int initialDegree;
 int firstTurnDegree;
 bool kys = true;
-int turnSpeed = 50;
-int adjustSpeed = 50;
-int forwardSpeed = 50;
+int turnSpeed = 30;
+int adjustSpeed = 20;
+int forwardSpeed = 30;
 
 void inita() {
 
@@ -127,10 +130,12 @@ void firstGo(){
 void secondTurn() {
 
 car.setMotorSpeed(turnSpeed,-turnSpeed);
+/*
 if (initialDegree<270)
 { FirstMeasure = initialDegree;}
 else
 { FirstMeasure = initialDegree;}
+*/
 /*
 if (initialDegree<180)
 { initialDegree = initialDegree+180;}
@@ -142,6 +147,7 @@ if (initialDegree<=90) {
   {
     if (gyro.getAngularDisplacement()>initialDegree) {
       car.setSpeed(0);
+    secondAdjustint = gyro.getAngularDisplacement();
       changeState(_secondAdjust);
     }
   }
@@ -150,20 +156,21 @@ if (initialDegree<=90) {
   else {
   if (gyro.getAngularDisplacement()>FirstMeasure)
     { car.setSpeed(0);
+    secondAdjustint = gyro.getAngularDisplacement();
       changeState(_secondAdjust);
       }
-
 }
+
  }
 
  void secondAdjust() {
 
-if (initialDegree>gyro.getAngularDisplacement())
+if (secondAdjustint>gyro.getAngularDisplacement())
   {car.setMotorSpeed(adjustSpeed,-adjustSpeed);
   }
-  if (initialDegree<gyro.getAngularDisplacement())
+  if (secondAdjustint<gyro.getAngularDisplacement())
   {car.setMotorSpeed(-adjustSpeed,adjustSpeed);}
-  if ( initialDegree == gyro.getAngularDisplacement()||initialDegree == gyro.getAngularDisplacement()+1 || initialDegree == gyro.getAngularDisplacement()-1|| initialDegree == gyro.getAngularDisplacement()-2)
+  if ( secondAdjustint == gyro.getAngularDisplacement()||secondAdjustint == gyro.getAngularDisplacement()+1 || secondAdjustint == gyro.getAngularDisplacement()-1|| secondAdjustint == gyro.getAngularDisplacement()-2)
   {car.setSpeed(0);
   changeState(_secondGo);
   }
