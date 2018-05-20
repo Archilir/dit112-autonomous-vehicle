@@ -225,5 +225,7 @@ bool Parking::withinRange(int min, int max, int target) {
 }
 
 bool Parking::isParking() {
+  driver -> disableAutonomy();
   return (parkingState == _IDLING) ? false : true;
+
 }

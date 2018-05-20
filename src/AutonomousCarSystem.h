@@ -279,11 +279,14 @@ class RemoteControl
       _J_LEFT           = 143,
       _J_RIGHT          = 144,
 
+      _J_SPEED_30       = 230,
+
       // Signs
       _S_BLUE_TRIANGLE  = 191,
       _S_GREEN_SQUARE   = 192,
       _S_RED_RECTANGLE  = 193,
       _S_STOP_SIGN      = 194
+
 
       //
 

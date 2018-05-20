@@ -24,7 +24,7 @@ void Sensors::update() {
   if (sensorsEnabled) {
     gyro.update();
     unsigned long timer = millis();
-    if (timer >= 80 + updateTimer) {
+    if (timer >= 90 + updateTimer) {
       updateTimer = timer;
       updateSensors();
     }
@@ -55,7 +55,7 @@ void Sensors::updateSensors() {
     if (distanceFrontSide == 0) distanceFrontSide = 70;
 
     //distanceMiddleSide = irMiddleSide.getMedianDistance(3);
-    distanceMiddleSide = irMiddleSide.getMedianDistance(3);
+    distanceMiddleSide = irMiddleSide.getDistance();
     if (distanceMiddleSide == 0) distanceMiddleSide = 70;
     else if (distanceMiddleSide >= 12) distanceMiddleSide = distanceMiddleSide - 12;
 
@@ -67,7 +67,7 @@ void Sensors::updateSensors() {
 }
 
 void Sensors::updateRearCorner() {
-  distanceRearCorner   = irRearCorner.getMedianDistance(3);
+  distanceRearCorner   = irRearCorner.getDistance();
   //distanceRearCorner = irRearCorner.getMedianDistance(3);
 
   if (distanceRearCorner == 0)
