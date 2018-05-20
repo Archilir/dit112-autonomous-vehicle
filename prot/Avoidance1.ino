@@ -6,18 +6,18 @@ enum states{
 
   _idle,
   _start,
-  _checkAngle,
-  _spin,
-  _forward,
+  _firstTurn,
+  _firstGo,
+  _secondTurn,
   _finish,
-  _spin2,
+  _secondGoPT,
   _checkAngle2,
-  _justgoplease,
+  _secondGo,
   _adjust,
-  _measure,
-  _adjust3,
+  _thirdAdjust,
   _jesus,
-  _adjust2
+  _thirdTurn,
+  _secondAdjust
 
 };
 GP2Y0A21 IR;
@@ -46,133 +46,126 @@ const int ECHO_PIN_BACK = 4;
 const int IR_pin = A15;
 
 //bool state = true;
-int fa;
-int fb;
-int initialDegree;
+int FirstMeasure;
 bool delay1 = true;
-int initialDegree2;
-int b;
+int initialDegree;
+int firstTurnDegree;
 bool kys = true;
+int turnSpeed = 50;
+int adjustSpeed = 50;
+int forwardSpeed = 50;
 
 void inita() {
 
 car.setSpeed(0);
-fa = gyro.getAngularDisplacement();
-initialDegree2=gyro.getAngularDisplacement();
-changeState(_checkAngle);
-Serial.println("f");
+FirstMeasure = gyro.getAngularDisplacement();
+initialDegree=gyro.getAngularDisplacement();
+changeState(_firstTurn);
 }
 
 
 
-void check() {
-  Serial.println("u");
-  initialDegree= gyro.getAngularDisplacement();
-car.setMotorSpeed(-30,30);
-if (fa >= 90) {
+void firstTurn() {
 
-  if (fa==90) {
+car.setMotorSpeed(-turnSpeed,turnSpeed);
+if (initialDegree >= 90) {
+  if (initialDegree==90) {
     if(gyro.getAngularDisplacement()<200) {
-    if (gyro.getAngularDisplacement()>0){
-        car.setSpeed(0);
-        fa = fa-90;
-        changeState(_adjust);}
+      if (gyro.getAngularDisplacement()>0){
+          car.setSpeed(0);
+          FirstMeasure = FirstMeasure-90;
+          changeState(_firstAdjust);}
     }
   }
 
 
 
-if (gyro.getAngularDisplacement() <= fa-90)
+if (gyro.getAngularDisplacement() <= initialDegree-90)
 {car.setSpeed(0);
-fa = fa-90;
-changeState(_adjust);}
+FirstMeasure = FirstMeasure-90;
+changeState(_firstAdjust);}
 }
 
 
 else {
 
- int negativeread = fa-90;
+ int negativeread = initialDegree-90;
  if (gyro.getAngularDisplacement() >200) {
  if (gyro.getAngularDisplacement() <= 360-(-negativeread))
  {car.setSpeed(0);
- fa = 360-(-negativeread);
-  changeState(_adjust);
+ FirstMeasure = 360-(-negativeread);
+  changeState(_firstAdjust);
  }
  }
 }
 }
 
 
-void adjust() {
-  if (fa>gyro.getAngularDisplacement())
-  {car.setMotorSpeed(25,-25);
+void firstAdjust() {
+  if (FirstMeasure>gyro.getAngularDisplacement())
+  {car.setMotorSpeed(turnSpeed,-turnSpeed);
   }
-  if (fa<gyro.getAngularDisplacement())
-  {car.setMotorSpeed(-25,25);}
-  if ( fa == gyro.getAngularDisplacement() || fa == gyro.getAngularDisplacement()+1 || fa == gyro.getAngularDisplacement()-1 )
+  if (FirstMeasure<gyro.getAngularDisplacement())
+  {car.setMotorSpeed(-turnSpeed,turnSpeed);}
+  if ( FirstMeasure == gyro.getAngularDisplacement() || FirstMeasure == gyro.getAngularDisplacement()+1 || FirstMeasure == gyro.getAngularDisplacement()-1 )
   {car.setSpeed(0);
-  changeState(_spin);
+  changeState(_firstGo);
   }
 
 }
-void spin(){
-  car.setSpeed(40);
+void firstGo(){
+  car.setSpeed(forwardSpeed);
   if ((readRight >= 30 || readRight == 0)  && (IRread >=10 || IRread == 0 )) {
     car.setSpeed(0);
-    changeState(_measure);
+    changeState(_secondTurn);
 
   }
 
 }
 
-void takeMeasure2(){
-    fb = gyro.getAngularDisplacement();
-    changeState(_forward);
 
-}
+void secondTurn() {
 
-void forward() {
-
-car.setMotorSpeed(30,-30);
-if (initialDegree2<270)
-{ fa = initialDegree2;}
+car.setMotorSpeed(turnSpeed,-turnSpeed);
+if (initialDegree<270)
+{ FirstMeasure = initialDegree;}
 else
-{ fa = initialDegree2;}
+{ FirstMeasure = initialDegree;}
 /*
-if (initialDegree2<180)
-{ initialDegree2 = initialDegree2+180;}
+if (initialDegree<180)
+{ initialDegree = initialDegree+180;}
 else
-{initialDegree2 = initialDegree2-180;}
+{initialDegree = initialDegree-180;}
 */
-if (initialDegree2<=90) {
+if (initialDegree<=90) {
   if(gyro.getAngularDisplacement()<200)
   {
-    if (gyro.getAngularDisplacement()>fa) {
+    if (gyro.getAngularDisplacement()>initialDegree) {
       car.setSpeed(0);
-      changeState(_adjust2);
+      changeState(_secondAdjust);
     }
   }
       }
 
   else {
-  if (gyro.getAngularDisplacement()>fa)
+  if (gyro.getAngularDisplacement()>FirstMeasure)
     { car.setSpeed(0);
-      changeState(_adjust2);
+      changeState(_secondAdjust);
       }
 
 }
  }
 
- void adjust2() {
+ void secondAdjust() {
 
-if (initialDegree2>gyro.getAngularDisplacement())
-  {car.setMotorSpeed(25,-25);
+if (initialDegree>gyro.getAngularDisplacement())
+  {car.setMotorSpeed(adjustSpeed,-adjustSpeed);
   }
-  if (initialDegree2<gyro.getAngularDisplacement())
-  {car.setMotorSpeed(-25,25);}
-  if ( initialDegree2 == gyro.getAngularDisplacement()||initialDegree2 == gyro.getAngularDisplacement()+1 || initialDegree2 == gyro.getAngularDisplacement()-1|| initialDegree2 == gyro.getAngularDisplacement()-2)
+  if (initialDegree<gyro.getAngularDisplacement())
+  {car.setMotorSpeed(-adjustSpeed,adjustSpeed);}
+  if ( initialDegree == gyro.getAngularDisplacement()||initialDegree == gyro.getAngularDisplacement()+1 || initialDegree == gyro.getAngularDisplacement()-1|| initialDegree == gyro.getAngularDisplacement()-2)
   {car.setSpeed(0);
-  changeState(_justgoplease);
+  changeState(_secondGo);
   }
 
 /*
@@ -183,22 +176,22 @@ if (initialDegree2>gyro.getAngularDisplacement())
   {car.setMotorSpeed(-25,25);}
   if ( b == gyro.getAngularDisplacement()|| b == gyro.getAngularDisplacement()+1 || b == gyro.getAngularDisplacement()-1)
   {car.setSpeed(0);
-  //changeState(_spin2);
+  //changeState(_secondGoPT);
   }
 */
  }
-void goplease() {
+void secondGo() {
   if ((readRight >= 30 || readRight == 0)  && (IRread >=10 || IRread == 0 )) {
-  car.setSpeed(50);
+  car.setSpeed(forwardSpeed);
   }
-else {changeState(_spin2);}
+else {changeState(_secondGoPT);}
 }
-void spin2(){
-        car.setSpeed(50);
+void secondGoPT(){
+        car.setSpeed(forwardSpeed);
 
   if ((readRight >= 30 || readRight == 0)  && (IRread >=10 || IRread == 0 )) {
     car.setSpeed(0);
-    changeState(_checkAngle2);
+    changeState(_thirdTurn);
 
 }
 
@@ -207,33 +200,33 @@ void spin2(){
 
 
 
-void check2() {
+void thirdTurn() {
 
-car.setMotorSpeed(30,-30);
-if (initialDegree2<270)
-{ fa = initialDegree2+90;}
+car.setMotorSpeed(turnSpeed,-turnSpeed);
+if (initialDegree<270)
+{ FirstMeasure = initialDegree+90;}
 else
-{ fa = initialDegree2+90-360;}
+{ FirstMeasure = initialDegree+90-360;}
 /*
-if (initialDegree2<180)
-{ initialDegree2 = initialDegree2+180;}
+if (initialDegree<180)
+{ initialDegree = initialDegree+180;}
 else
-{initialDegree2 = initialDegree2-180;}
+{initialDegree = initialDegree-180;}
 */
-if (initialDegree2<=90) {
+if (initialDegree<=90) {
   if(gyro.getAngularDisplacement()<200)
   {
-    if (gyro.getAngularDisplacement()>fa) {
+    if (gyro.getAngularDisplacement()>FirstMeasure) {
       car.setSpeed(0);
-      changeState(_adjust3);
+      changeState(_thirdAdjust);
     }
   }
       }
 
   else {
-  if (gyro.getAngularDisplacement()>fa)
+  if (gyro.getAngularDisplacement()>FirstMeasure)
     { car.setSpeed(0);
-      changeState(_adjust3);
+      changeState(_thirdAdjust);
       }
 
 }
@@ -243,13 +236,13 @@ if (initialDegree2<=90) {
 
 
 
- void adjust3() {
-  if (fa>gyro.getAngularDisplacement())
-  {car.setMotorSpeed(25,-25);
+ void thirdAdjust() {
+  if (FirstMeasure>gyro.getAngularDisplacement())
+  {car.setMotorSpeed(adjustSpeed,-adjustSpeed);
   }
-  if (fa<gyro.getAngularDisplacement())
-  {car.setMotorSpeed(-25,25);}
-  if ( fa == gyro.getAngularDisplacement()||fa == gyro.getAngularDisplacement()+1 || fa == gyro.getAngularDisplacement()-1|| fa == gyro.getAngularDisplacement()-2)
+  if (FirstMeasure<gyro.getAngularDisplacement())
+  {car.setMotorSpeed(-adjustSpeed,adjustSpeed);}
+  if ( FirstMeasure == gyro.getAngularDisplacement()||FirstMeasure == gyro.getAngularDisplacement()+1 || FirstMeasure == gyro.getAngularDisplacement()-1|| FirstMeasure == gyro.getAngularDisplacement()-2)
   {car.setSpeed(0);
   changeState(_jesus);
   }
@@ -264,8 +257,8 @@ void changeState(char newState) {
 }
 
 void christ() {
-  car.setSpeed(30);
-  if(readFront <= 5)
+  car.setSpeed(forwardSpeed);
+  if(readFront <= 10)
   {car.setSpeed(0);
   changeState(_finish);
   }
@@ -273,12 +266,12 @@ void christ() {
 
 
 void finish() {
-  car.setMotorSpeed(-30,30);
-  if (fa==90) {
+  car.setMotorSpeed(-turnSpeed,turnSpeed);
+  if (FirstMeasure==90) {
     if(gyro.getAngularDisplacement()>200) {
-    if (gyro.getAngularDisplacement()>initialDegree2){
+    if (gyro.getAngularDisplacement()>initialDegree){
       car.setSpeed(0);
-      fa = fa-90;
+      FirstMeasure = FirstMeasure-90;
       changeState(_idle);}
 
     }
@@ -286,7 +279,7 @@ void finish() {
 
 
 
-if (gyro.getAngularDisplacement() <= initialDegree2)
+if (gyro.getAngularDisplacement() <= initialDegree)
 {car.setSpeed(0);
 
 changeState(_idle);}
@@ -300,7 +293,7 @@ void debug() {
 
 
 void takeRead() {
-     fa = gyro.getAngularDisplacement();
+     FirstMeasure = gyro.getAngularDisplacement();
 }
 
 
@@ -333,11 +326,9 @@ void loop() {
   medianreadFront = sonicA.getMedianDistance(5);
   medianreadRight = sonicB.getMedianDistance(5);
 
-    Serial.println("d");
   debug();
 
-  if (kys && state==_idle && (medianreadFront<=15 && medianreadFront >0) && (medianreadRight<= 8 && medianreadRight > 0)) {
-     Serial.println("y");
+  if (kys && state==_idle && (medianreadFront<=20 && medianreadFront >0) && (medianreadRight<= 8 && medianreadRight > 0)) {
      kys=false;
    changeState(_start);
 
@@ -347,27 +338,26 @@ void loop() {
     switch (state) {
   case _start: inita(); break;
 
-  case _checkAngle: check(); break;
+  case _firstTurn: firstTurn(); break;
 
-  case _checkAngle2: check2(); break;
+  case _thirdTurn: thirdTurn(); break;
 
-  case _spin: spin(); break;
+  case _firstGo: firstGo(); break;
 
-  case _adjust: adjust(); break;
+  case _firstAdjust: firstAdjust(); break;
 
-  case _spin2: spin2(); break;
+  case _secondGoPT: secondGoPT(); break;
 
-  case _justgoplease: goplease(); break;
+  case _secondGo: secondGo(); break;
 
-  case _forward:forward(); break;
+  case _secondTurn:secondTurn(); break;
 
-  case _adjust3:adjust3();break;
+  case _thirdAdjust:thirdAdjust();break;
 
   case _finish:finish(); break;
 
   case _jesus:christ(); break;
-  case _measure:takeMeasure2(); break;
-  case _adjust2:adjust2(); break;
+  case _secondAdjust:secondAdjust(); break;
     }
 
 }
