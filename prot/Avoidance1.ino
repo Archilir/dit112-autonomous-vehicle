@@ -66,104 +66,114 @@ Serial.println("f");
 
 
 void check() {
+  Serial.println("u");
   initialDegree= gyro.getAngularDisplacement();
-  car.setMotorSpeed(-30,30);
-    if (fa >= 90) {
+car.setMotorSpeed(-30,30);
+if (fa >= 90) {
 
-        if (fa==90) {
-          if(gyro.getAngularDisplacement()>200) {
-          if (gyro.getAngularDisplacement()>fa-90){
-            car.setSpeed(0);
-            fa = fa-90;
-            changeState(_adjust);
-      }
+  if (fa==90) {
+    if(gyro.getAngularDisplacement()<200) {
+    if (gyro.getAngularDisplacement()>0){
+        car.setSpeed(0);
+        fa = fa-90;
+        changeState(_adjust);}
     }
   }
 
-    if (gyro.getAngularDisplacement() <= fa-90)
-      {car.setSpeed(0);
-       fa = fa-90;
-       changeState(_adjust);}
-  }
 
-    else {
-          int negativeread = fa-90;
-          if (gyro.getAngularDisplacement() >200) {
-            if (gyro.getAngularDisplacement() <= 360-(-negativeread))
-                {car.setSpeed(0);
-                 fa = 360-(-negativeread);
-                  changeState(_adjust);
-      }
-    }
-  }
+
+if (gyro.getAngularDisplacement() <= fa-90)
+{car.setSpeed(0);
+fa = fa-90;
+changeState(_adjust);}
+}
+
+
+else {
+
+ int negativeread = fa-90;
+ if (gyro.getAngularDisplacement() >200) {
+ if (gyro.getAngularDisplacement() <= 360-(-negativeread))
+ {car.setSpeed(0);
+ fa = 360-(-negativeread);
+  changeState(_adjust);
+ }
+ }
+}
 }
 
 
 void adjust() {
-     if (fa>gyro.getAngularDisplacement())
-       {car.setMotorSpeed(25,-25);}
-     if (fa<gyro.getAngularDisplacement())
-        {car.setMotorSpeed(-25,25);}
-     if ( fa == gyro.getAngularDisplacement()||fa == gyro.getAngularDisplacement()+1 || fa == gyro.getAngularDisplacement()-1|| fa == gyro.getAngularDisplacement()-2)
-        {car.setSpeed(0);
-         changeState(_spin);}
+  if (fa>gyro.getAngularDisplacement())
+  {car.setMotorSpeed(25,-25);
+  }
+  if (fa<gyro.getAngularDisplacement())
+  {car.setMotorSpeed(-25,25);}
+  if ( fa == gyro.getAngularDisplacement() || fa == gyro.getAngularDisplacement()+1 || fa == gyro.getAngularDisplacement()-1 )
+  {car.setSpeed(0);
+  changeState(_spin);
   }
 
+}
 void spin(){
-    car.setSpeed(40);
-    if ((readRight >= 30 || readRight == 0)  && (IRread >=10 || IRread == 0 )) {
-        car.setSpeed(0);
-        changeState(_measure);}
+  car.setSpeed(40);
+  if ((readRight >= 30 || readRight == 0)  && (IRread >=10 || IRread == 0 )) {
+    car.setSpeed(0);
+    changeState(_measure);
 
   }
+
+}
 
 void takeMeasure2(){
     fb = gyro.getAngularDisplacement();
     changeState(_forward);
+
 }
 
 void forward() {
-car.setMotorSpeed(30,-30);
 
+car.setMotorSpeed(30,-30);
+if (initialDegree2<270)
+{ fa = initialDegree2;}
+else
+{ fa = initialDegree2;}
+/*
+if (initialDegree2<180)
+{ initialDegree2 = initialDegree2+180;}
+else
+{initialDegree2 = initialDegree2-180;}
+*/
 if (initialDegree2<=90) {
   if(gyro.getAngularDisplacement()<200)
   {
-
-     if (initialDegree2==90) {
-       if(gyro.getAngularDisplacement()>200) {
-        if (gyro.getAngularDisplacement()>fa-90){
-            car.setSpeed(0);
-            fa = fa-90;
-            changeState(_adjust);}
+    if (gyro.getAngularDisplacement()>fa) {
+      car.setSpeed(0);
+      changeState(_adjust2);
     }
   }
-
-    if (gyro.getAngularDisplacement()>initialDegree2) {
-        car.setSpeed(0);
-        b=gyro.getAngularDisplacement();
-        changeState(_adjust2);
       }
-    }
-  }
 
   else {
-    if (gyro.getAngularDisplacement()>initialDegree2)
-        {car.setSpeed(0);
-         b=gyro.getAngularDisplacement();
-         changeState(_adjust2);
-        }
+  if (gyro.getAngularDisplacement()>fa)
+    { car.setSpeed(0);
+      changeState(_adjust2);
       }
+
 }
+ }
 
  void adjust2() {
 
-  if (initialDegree2>gyro.getAngularDisplacement())
-      {car.setMotorSpeed(25,-25);}
+if (initialDegree2>gyro.getAngularDisplacement())
+  {car.setMotorSpeed(25,-25);
+  }
   if (initialDegree2<gyro.getAngularDisplacement())
-      {car.setMotorSpeed(-25,25);}
-  if (initialDegree2 == gyro.getAngularDisplacement()||initialDegree2 == gyro.getAngularDisplacement()+1 || initialDegree2 == gyro.getAngularDisplacement()-1|| initialDegree2 == gyro.getAngularDisplacement()-2)
-      {car.setSpeed(0);
-      changeState(_justgoplease);}
+  {car.setMotorSpeed(-25,25);}
+  if ( initialDegree2 == gyro.getAngularDisplacement()||initialDegree2 == gyro.getAngularDisplacement()+1 || initialDegree2 == gyro.getAngularDisplacement()-1|| initialDegree2 == gyro.getAngularDisplacement()-2)
+  {car.setSpeed(0);
+  changeState(_justgoplease);
+  }
 
 /*
     if (b>gyro.getAngularDisplacement())
@@ -177,65 +187,72 @@ if (initialDegree2<=90) {
   }
 */
  }
-
-
 void goplease() {
   if ((readRight >= 30 || readRight == 0)  && (IRread >=10 || IRread == 0 )) {
-      car.setSpeed(50);}
-
+  car.setSpeed(50);
+  }
 else {changeState(_spin2);}
-
 }
-
 void spin2(){
-car.setSpeed(50);
+        car.setSpeed(50);
 
   if ((readRight >= 30 || readRight == 0)  && (IRread >=10 || IRread == 0 )) {
-       car.setSpeed(0);
-       changeState(_checkAngle2);}
+    car.setSpeed(0);
+    changeState(_checkAngle2);
 
 }
+
+  }
+
+
 
 
 void check2() {
 
-  car.setMotorSpeed(30,-30);
-      if (initialDegree2<270)
-          {fa = initialDegree2+90;}
- else
-          {fa = initialDegree2+90-360;}
+car.setMotorSpeed(30,-30);
+if (initialDegree2<270)
+{ fa = initialDegree2+90;}
+else
+{ fa = initialDegree2+90-360;}
 /*
 if (initialDegree2<180)
 { initialDegree2 = initialDegree2+180;}
 else
 {initialDegree2 = initialDegree2-180;}
 */
-    if (initialDegree2<=90) {
-      if(gyro.getAngularDisplacement()<200)
+if (initialDegree2<=90) {
+  if(gyro.getAngularDisplacement()<200)
   {
-        if (gyro.getAngularDisplacement()>fa) {
-            car.setSpeed(0);
-            changeState(_adjust3);}
+    if (gyro.getAngularDisplacement()>fa) {
+      car.setSpeed(0);
+      changeState(_adjust3);
+    }
   }
-}
+      }
 
   else {
-        if (gyro.getAngularDisplacement()>fa){
-          car.setSpeed(0);
-          changeState(_adjust3);}
+  if (gyro.getAngularDisplacement()>fa)
+    { car.setSpeed(0);
+      changeState(_adjust3);
+      }
 
-  }
 }
+}
+
+
+
 
 
  void adjust3() {
   if (fa>gyro.getAngularDisplacement())
-      {car.setMotorSpeed(25,-25);}
+  {car.setMotorSpeed(25,-25);
+  }
   if (fa<gyro.getAngularDisplacement())
-      {car.setMotorSpeed(-25,25);}
-  if (fa == gyro.getAngularDisplacement()||fa == gyro.getAngularDisplacement()+1 || fa == gyro.getAngularDisplacement()-1|| fa == gyro.getAngularDisplacement()-2)
-      {car.setSpeed(0);
-     changeState(_jesus);}
+  {car.setMotorSpeed(-25,25);}
+  if ( fa == gyro.getAngularDisplacement()||fa == gyro.getAngularDisplacement()+1 || fa == gyro.getAngularDisplacement()-1|| fa == gyro.getAngularDisplacement()-2)
+  {car.setSpeed(0);
+  changeState(_jesus);
+  }
  }
 
 
@@ -248,26 +265,31 @@ void changeState(char newState) {
 
 void christ() {
   car.setSpeed(30);
-    if(readFront <= 5)
-      {car.setSpeed(0);
-       changeState(_finish);}
+  if(readFront <= 5)
+  {car.setSpeed(0);
+  changeState(_finish);
+  }
 }
 
 
 void finish() {
   car.setMotorSpeed(-30,30);
   if (fa==90) {
-    if (gyro.getAngularDisplacement()>200) {
-      if (gyro.getAngularDisplacement()>initialDegree2){
-          car.setSpeed(0);
-          fa = fa-90;
-          changeState(_idle);}
+    if(gyro.getAngularDisplacement()>200) {
+    if (gyro.getAngularDisplacement()>initialDegree2){
+      car.setSpeed(0);
+      fa = fa-90;
+      changeState(_idle);}
+
     }
   }
 
-    if (gyro.getAngularDisplacement() <= initialDegree2)
-        {car.setSpeed(0);
-        changeState(_idle);}
+
+
+if (gyro.getAngularDisplacement() <= initialDegree2)
+{car.setSpeed(0);
+
+changeState(_idle);}
 }
 
 
@@ -280,6 +302,10 @@ void debug() {
 void takeRead() {
      fa = gyro.getAngularDisplacement();
 }
+
+
+
+
 
 void setup() {
   // put your setup code here, to run once:
