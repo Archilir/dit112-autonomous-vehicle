@@ -55,7 +55,7 @@ int initialDegree;
 int firstTurnDegree;
 bool kys = true;
 int turnSpeed = 30;
-int adjustSpeed = 20;
+int adjustSpeed = 25;
 int forwardSpeed = 30;
 
 void inita() {
@@ -265,7 +265,7 @@ void changeState(char newState) {
 
 void christ() {
   car.setSpeed(forwardSpeed);
-  if(readFront <= 10)
+  if(medianreadRight <= 10 && (medianreadRight>0 && medianreadRight<=10))
   {car.setSpeed(0);
   changeState(_finish);
   }
