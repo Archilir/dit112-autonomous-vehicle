@@ -126,6 +126,7 @@ class Driver
     void disableDriftCorrection();
     bool isDriftCorrecting();
     void driftCorrection(int, int);
+    void setMotorSpeed(int, int);
 
   private:
     Car *car;
@@ -160,7 +161,7 @@ class Parking
     bool isParking();
 
   private:
-    Driver *driver;
+    Driver  *driver;
     Sensors *sensors;
 
     enum parkingState {
@@ -257,12 +258,12 @@ class RemoteControl
       _CAMERA_RIGHT = 'r',
 
       // Joystick
-      _LEFT_X_NEGATIVE  = 110,
-      _LEFT_X_NEUTRAL   = 111,
-      _LEFT_X_POSITIVE  = 112,
-      _LEFT_Y_NEGATIVE  = 120,
-      _LEFT_Y_NEUTRAL   = 121,
-      _LEFT_Y_POSITIVE  = 122,
+      _LEFT_X_NEGATIVE  = 10,
+      _LEFT_X_NEUTRAL   = 11,
+      _LEFT_X_POSITIVE  = 12,
+      _LEFT_Y_NEGATIVE  = 13,
+      _LEFT_Y_NEUTRAL   = 14,
+      _LEFT_Y_POSITIVE  = 15,
 
       _RIGHT_X_NEGATIVE = 130,
       _RIGHT_X_NEUTRAL  = 131,
@@ -292,20 +293,61 @@ class RemoteControl
 
 
     };
-
-    enum {
-      _STANDARD,
-      _STICK_LEFT_X,
-      _STICK_LEFT_Y,
-      _STICK_RIGHT_X,
-      _STICK_RIGHT_Y
-    };
-
-    char controlState = _STANDARD;
     int  pollJoystick();
     void standardScheme(char);
     void manualControl(char);
     void joystickScheme(int);
+};
+
+class Avoidance {
+public:
+  void begin(Driver*, Sensors*);
+private:
+  Driver*   driver;
+  Sensors* sensors;
+
+  enum states{
+
+    _idle,
+    _start,
+    _firstTurn,
+    _firstGo,
+    _secondTurn,
+    _finish,
+    _secondGoPT,
+    _checkAngle2,
+    _secondGo,
+    _adjust,
+    _thirdAdjust,
+    _jesus,
+    _thirdTurn,
+    _secondAdjust,
+    _firstAdjust
+
+  };
+
+  int medianreadFront = 0;
+  int medianreadRight = 0;
+  int medianreadBack = 0;
+  int secondAdjustint;
+  int readRight = 0;
+  int readFront = 0;
+  int IRread;
+  unsigned int current;
+  char state = _idle;
+
+  int FirstMeasure;
+  bool delay1 = true;
+  int initialDegree;
+  int firstTurnDegree;
+  bool kys = true;
+  int turnSpeed = 30;
+  int adjustSpeed = 20;
+  int forwardSpeed = 30;
+
+  void inita();
+  void changeState(char);
+  void firstTurn();
 };
 
 #endif

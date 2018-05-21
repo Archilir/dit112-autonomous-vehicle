@@ -8,58 +8,17 @@ void RemoteControl::begin(Driver* driverRef, Parking* parkingRef, Sensors* senso
 }
 
 void RemoteControl::listen() {
-  if (Serial3.available()) {
-    input = Serial3.read();
+  if (Serial3.available() || Serial.available()) {
+    //if (Serial.available())
+    //  input = Serial.read();
+    if (Serial3.available())
+      input = Serial3.read();
     standardScheme(input);
   }
 }
 
 void RemoteControl::listenJoystick() {
-  if (Serial.available()) {
-    switch (Serial.read()) {
-      /*case _LEFT_X_NEGATIVE :
-        driver  -> steer(-pollJoystick());
-        break;
-      case _LEFT_X_NEUTRAL  : driver -> steer(0);                break;
-      case _LEFT_X_POSITIVE : driver -> steer( pollJoystick());  break;
 
-      case _LEFT_Y_NEGATIVE :
-        if (driver -> getAngle() == 0) {
-          driver -> disableTrackingCourse();
-          driver -> enableDriftCorrection();
-        }
-
-        driver  -> drive(-pollJoystick());
-        break;
-
-      case _LEFT_Y_NEUTRAL  : standardScheme(_STOP);             break;
-
-      case _LEFT_Y_POSITIVE :
-        //driver -> disableTrackingCourse();
-        //driver -> enableDriftCorrection();
-        driver  -> drive( pollJoystick());
-        break;*/
-
-      case _RIGHT_X_NEGATIVE: break;
-      case _RIGHT_X_NEUTRAL : break;
-      case _RIGHT_X_POSITIVE: break;
-      case _J_STOP          : standardScheme(_STOP);             break;
-      case _J_SIREN_ON      : standardScheme(_AUX_3_ON);         break;
-      case _J_SIREN_OFF     : standardScheme(_AUX_3_OFF);        break;
-      case _J_PARKING_ON    : standardScheme(_AUX_4_ON);         break;
-      case _J_PARKING_OFF   : standardScheme(_AUX_4_OFF);        break;
-      case _J_FORWARD       : manualControl (_FORWARD);          break;
-      case _J_BACK          : manualControl (_BACK);             break;
-      case _J_LEFT          : manualControl (_LEFT);             break;
-      case _J_RIGHT         : manualControl (_RIGHT);            break;
-      case _J_SPEED_30      : standardScheme(_SPEED_30);         break;
-      // Signs
-      case _S_BLUE_TRIANGLE : break;
-      case _S_GREEN_SQUARE  : break;
-      case _S_RED_RECTANGLE : break;
-      case _S_STOP_SIGN     : standardScheme(_STOP);             break;
-    }
-  }
 }
 
 int RemoteControl::pollJoystick() {
@@ -92,7 +51,32 @@ void RemoteControl::standardScheme(char input) {
     case _AUX_4_ON  : parking -> initiate(); break;
     case _AUX_4_OFF : parking -> stop();     break;
 
-    case _STOP :
+    case _LEFT_X_NEGATIVE :
+      driver -> disableDriftCorrection();
+      driver -> enableTrackingCourse();
+      driver  -> steer(-pollJoystick());
+      break;
+
+    case _LEFT_X_NEUTRAL  :
+      driver -> disableTrackingCourse();
+      driver -> enableDriftCorrection();
+      driver -> steer(0);
+      break;
+
+    case _LEFT_X_POSITIVE :
+      driver -> disableDriftCorrection();
+      driver -> enableTrackingCourse();
+      driver -> steer( pollJoystick());
+      break;
+
+    case _LEFT_Y_NEGATIVE :
+      driver  -> drive(-pollJoystick());
+    break;
+    case _LEFT_Y_POSITIVE :
+      driver  -> drive( pollJoystick());
+    break;
+
+    case _LEFT_Y_NEUTRAL: case _STOP :
       driver -> disableDriftCorrection();
       driver -> enableTrackingCourse();
       driver -> stop();
