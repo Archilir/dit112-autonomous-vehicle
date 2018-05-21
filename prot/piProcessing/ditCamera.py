@@ -8,6 +8,7 @@ import threading
 import serial
 import logging
 import multiprocessing as mp
+import struct
 
 class ContourRectangle():
 
@@ -84,7 +85,7 @@ class Camera(mp.Process):
 
             #Call the method we made above to decide what the shape of a contour is
             thishape = self.shape_compare(c)
-            if(cv.contourArea(c)>120):
+            if(cv.contourArea(c)>130):
                 cv.drawContours(frame, [c], -1, (0, 255, 0), 2)
                         
                 cv.putText(frame, thishape, (cX - 20, cY - 20),
@@ -100,44 +101,33 @@ class Camera(mp.Process):
         red = cv.countNonZero(mask_red)
         
 
-    def detectSign2(self, color, shape, serial):
-        for s in shape:
-            if(s == "triangle" and color[1] == 1):
-                serial.write('A'.encode())
-            elif(s == "square" and color[0] == 1):
-                serial.write('B'.encode())
-            elif(s == "rectangle" and color[2] == 1):
-                serial.write('C'.encode())
-            elif(s == "stop sign" and color[2] == 1):
-                serial.write('D'.encode())
-
     def detectSign(self, shapes, serial):
         for s in shapes:
             if(s.shape == "triangle"):
                 hsv = cv.cvtColor(s.rectangle, cv.COLOR_BGR2HSV)
                 mask = cv.inRange(hsv, Camera.lower_blue, Camera.upper_blue)
-                if(cv.countNonZero(mask) > 130):
-                    serial.write('A'.encode())
+                if(cv.countNonZero(mask) > 140):
+                    self.serial.write(struct.pack('!B', 191))
                     print("blue triangle")
             elif(s.shape == "square"):
                 hsv = cv.cvtColor(s.rectangle, cv.COLOR_BGR2HSV)
                 mask = cv.inRange(hsv, Camera.lower_green, Camera.upper_green)
-                if(cv.countNonZero(mask) > 130):
-                    serial.write('B'.encode())
+                if(cv.countNonZero(mask) > 140):
+                    self.serial.write(struct.pack('!B', 192))
                     print("green square")
             elif(s.shape == "rectangle"):
                 img_inv = cv.bitwise_not(s.rectangle)
                 hsv = cv.cvtColor(img_inv, cv.COLOR_BGR2HSV)
                 mask = cv.inRange(hsv, Camera.lower_red, Camera.upper_red)
-                if(cv.countNonZero(mask) > 130):
-                    serial.write('C'.encode())
+                if(cv.countNonZero(mask) > 140):
+                    self.serial.write(struct.pack('!B', 193))
                     print("red rectangle")
             else:
                 img_inv = cv.bitwise_not(s.rectangle)
                 hsv = cv.cvtColor(img_inv, cv.COLOR_BGR2HSV)
                 mask = cv.inRange(hsv, Camera.lower_red, Camera.upper_red)
-                if(cv.countNonZero(mask) > 130):
-                    serial.write('D'.encode())
+                if(cv.countNonZero(mask) > 140):
+                    self.serial.write(struct.pack('!B', 194))
                     print("stop sign")
                 
                 
