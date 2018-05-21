@@ -249,10 +249,10 @@ class RemoteControl
       _AUX_1_OFF    = 'w',
       _AUX_2_ON     = 'U',
       _AUX_2_OFF    = 'u',
-      _AUX_3_ON     = 'V',
-      _AUX_3_OFF    = 'v',
-      _AUX_4_ON     = 'X',
-      _AUX_4_OFF    = 'x',
+      _AUX_3_ON     = 'V', // Siren   on
+      _AUX_3_OFF    = 'v', // Siren   off
+      _AUX_4_ON     = 'X', // Parking on
+      _AUX_4_OFF    = 'x', // Parking off
       _CAMERA_LEFT  = 'l',
       _CAMERA_RIGHT = 'r',
 
@@ -263,9 +263,6 @@ class RemoteControl
       _LEFT_Y_NEGATIVE  = 13,
       _LEFT_Y_NEUTRAL   = 14,
       _LEFT_Y_POSITIVE  = 15,
-
-      _J_SIREN_ON       = 103,
-      _J_SIREN_OFF      = 104
     };
 
     enum {
@@ -281,6 +278,15 @@ class RemoteControl
     void standardScheme(char);
     void manualControl(char);
     void joystickScheme(int);
+};
+
+class Avoidance {
+public:
+  void begin(Driver*, Sensors*);
+private:
+  Driver*  driver;
+  Sensors* sensors;
+  
 };
 
 #endif

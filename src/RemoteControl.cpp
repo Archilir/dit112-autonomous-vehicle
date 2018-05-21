@@ -62,37 +62,31 @@ void RemoteControl::standardScheme(char input) {
     case _AUX_4_ON  : parking -> initiate(); break;
     case _AUX_4_OFF : parking -> stop();     break;
 
-      case _LEFT_X_NEGATIVE :
-          driver -> disableDriftCorrection();
-          driver -> enableTrackingCourse();
-          driver  -> steer(-pollJoystick());
-          break;
+    case _LEFT_X_NEGATIVE :
+      driver -> disableDriftCorrection();
+      driver -> enableTrackingCourse();
+      driver  -> steer(-pollJoystick());
+      break;
 
-        case _LEFT_X_NEUTRAL  :
-          driver -> disableTrackingCourse();
-          driver -> enableDriftCorrection();
-          driver -> steer(0);
-          break;
+    case _LEFT_X_NEUTRAL  :
+      driver -> disableTrackingCourse();
+      driver -> enableDriftCorrection();
+      driver -> steer(0);
+      break;
 
-        case _LEFT_X_POSITIVE :
-          driver -> disableDriftCorrection();
-          driver -> enableTrackingCourse();
-          driver -> steer( pollJoystick());
-          break;
+    case _LEFT_X_POSITIVE :
+      driver -> disableDriftCorrection();
+      driver -> enableTrackingCourse();
+      driver -> steer( pollJoystick());
+      break;
 
-        case _LEFT_Y_NEGATIVE :
-          driver  -> drive(-pollJoystick());
-        break;
-        case _LEFT_Y_POSITIVE :
-          driver  -> drive( pollJoystick());
-        break;
-
-        case _LEFT_Y_NEUTRAL: case _STOP :
+    case _LEFT_Y_NEGATIVE : driver  -> drive(-pollJoystick()); break;
+    case _LEFT_Y_POSITIVE : driver  -> drive( pollJoystick()); break;
+    case _LEFT_Y_NEUTRAL: case _STOP :
           driver -> disableDriftCorrection();
           driver -> enableTrackingCourse();
           driver -> stop();
           break;
-
 
     case _FORWARD: case _BACK:   case _LEFT:    case _RIGHT:
     case _F_LEFT:  case _B_LEFT: case _F_RIGHT: case _B_RIGHT:
