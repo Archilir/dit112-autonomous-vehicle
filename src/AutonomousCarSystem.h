@@ -257,12 +257,12 @@ class RemoteControl
       _CAMERA_RIGHT = 'r',
 
       // Joystick
-      _LEFT_X_NEGATIVE  = 110,
-      _LEFT_X_NEUTRAL   = 111,
-      _LEFT_X_POSITIVE  = 112,
-      _LEFT_Y_NEGATIVE  = 120,
-      _LEFT_Y_NEUTRAL   = 121,
-      _LEFT_Y_POSITIVE  = 122,
+      _LEFT_X_NEGATIVE  = 10,
+      _LEFT_X_NEUTRAL   = 11,
+      _LEFT_X_POSITIVE  = 12,
+      _LEFT_Y_NEGATIVE  = 13,
+      _LEFT_Y_NEUTRAL   = 14,
+      _LEFT_Y_POSITIVE  = 15,
 
       _J_SIREN_ON       = 103,
       _J_SIREN_OFF      = 104

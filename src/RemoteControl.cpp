@@ -8,14 +8,17 @@ void RemoteControl::begin(Driver* driverRef, Parking* parkingRef, Sensors* senso
 }
 
 void RemoteControl::listen() {
-  if (Serial3.available()) {
-    input = Serial3.read();
+  if (Serial3.available() || Serial.available()) {
+    if (Serial.available())
+      input = Serial.read();
+    if (Serial3.available())
+      input = Serial3.read();
     standardScheme(input);
   }
 }
 
 void RemoteControl::listenJoystick() {
-  if (Serial.available()) {
+  /*if (Serial.available()) {
     switch (Serial.read()) {
       case _LEFT_X_NEGATIVE: driver  -> steer(-pollJoystick()); break;
       case _LEFT_X_POSITIVE: driver  -> steer( pollJoystick()); break;
@@ -26,7 +29,7 @@ void RemoteControl::listenJoystick() {
       case _J_SIREN_ON     : sensors -> sirenOn();              break;
       case _J_SIREN_OFF    : sensors -> sirenOff();             break;
     }
-  }
+  }*/
 }
 
 int RemoteControl::pollJoystick() {
@@ -59,11 +62,37 @@ void RemoteControl::standardScheme(char input) {
     case _AUX_4_ON  : parking -> initiate(); break;
     case _AUX_4_OFF : parking -> stop();     break;
 
-    case _STOP :
-      driver -> disableDriftCorrection();
-      driver -> enableTrackingCourse();
-      driver -> stop();
-      break;
+      case _LEFT_X_NEGATIVE :
+          driver -> disableDriftCorrection();
+          driver -> enableTrackingCourse();
+          driver  -> steer(-pollJoystick());
+          break;
+
+        case _LEFT_X_NEUTRAL  :
+          driver -> disableTrackingCourse();
+          driver -> enableDriftCorrection();
+          driver -> steer(0);
+          break;
+
+        case _LEFT_X_POSITIVE :
+          driver -> disableDriftCorrection();
+          driver -> enableTrackingCourse();
+          driver -> steer( pollJoystick());
+          break;
+
+        case _LEFT_Y_NEGATIVE :
+          driver  -> drive(-pollJoystick());
+        break;
+        case _LEFT_Y_POSITIVE :
+          driver  -> drive( pollJoystick());
+        break;
+
+        case _LEFT_Y_NEUTRAL: case _STOP :
+          driver -> disableDriftCorrection();
+          driver -> enableTrackingCourse();
+          driver -> stop();
+          break;
+
 
     case _FORWARD: case _BACK:   case _LEFT:    case _RIGHT:
     case _F_LEFT:  case _B_LEFT: case _F_RIGHT: case _B_RIGHT:
