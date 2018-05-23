@@ -7,5 +7,6 @@ Sensors sensors;
 RemoteControl remoteControl;
 Driver driver;
 Parking parking;
+Avoidance avoidance;
 
 #endif

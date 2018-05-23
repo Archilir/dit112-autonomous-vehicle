@@ -173,3 +173,7 @@ void Driver::driftCorrection(int course, int currentDirection) {
   Serial.print('\t');
   Serial.println(diff);*/
 }
+
+void Driver::setMotorSpeed(int x, int y) {
+  car -> setMotorSpeed(x, y);
+}

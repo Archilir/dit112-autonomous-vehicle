@@ -7,8 +7,8 @@ void setup()
   sensors.begin(&car);
   driver.begin(&car, &sensors);
   parking.begin(&driver, &sensors);
-  remoteControl.begin(&driver, &parking, &sensors);
-
+  avoidance.begin(&driver, &sensors);
+  remoteControl.begin(&driver, &parking, &sensors, &avoidance);
 }
 
 void loop()
@@ -16,7 +16,8 @@ void loop()
   sensors.update();
   //sensors.debug();
   remoteControl.listen();
-  remoteControl.listenJoystick();
+  //remoteControl.listenJoystick();
+  avoidance.monitor();
   parking.monitor();
   driver.update();
 

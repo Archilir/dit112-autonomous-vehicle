@@ -127,6 +127,7 @@ class Driver
     bool isDriftCorrecting();
     void driftCorrection(int, int);
 
+    void setMotorSpeed(int, int);
   private:
     Car *car;
     Sensors *sensors;
@@ -212,16 +213,87 @@ class Parking
 
 };
 
+class Avoidance {
+public:
+  void begin(Driver*, Sensors*);
+  void monitor();
+  void startAvoidance();
+  void stopAvoidance();
+  bool isEnabled();
+private:
+  Driver*  driver;
+  Sensors* sensors;
+
+  enum states{
+
+    _idle,
+    _start,
+    _firstTurn,
+    _firstGo,
+    _secondTurn,
+    _finish,
+    _secondGoPT,
+    _checkAngle2,
+    _secondGo,
+    _adjust,
+    _thirdAdjust,
+    _jesus,
+    _thirdTurn,
+    _secondAdjust,
+    _firstAdjust
+
+
+  };
+
+  int medianreadFront = 0;
+  int medianreadRight = 0;
+  int medianreadBack = 0;
+  int secondAdjustint;
+  int readRight = 0;
+  int readFront = 0;
+  int IRread;
+  unsigned int current;
+  char state = _idle;
+
+
+  //bool state = true;
+  int FirstMeasure;
+  bool delay1 = true;
+  int initialDegree;
+  int firstTurnDegree;
+  bool kys = true;
+  int turnSpeed = 35;
+  int adjustSpeed = 35;
+  int forwardSpeed = 30;
+
+  void changeState(char);
+  void inita();
+  void firstTurn();
+  void firstAdjust();
+  void firstGo();
+  void secondTurn();
+  void secondAdjust();
+  void secondGo();
+  void secondGoPT();
+  void thirdTurn();
+  void thirdAdjust();
+  void christ();
+  void finish();
+  void debug();
+  void takeRead();
+};
+
 class RemoteControl
 {
   public:
-    void begin(Driver*, Parking*, Sensors*);
+    void begin(Driver*, Parking*, Sensors*, Avoidance*);
     void listen();
     void listenJoystick();
   private:
     Driver  *driver;
     Parking *parking;
     Sensors *sensors;
+    Avoidance *avoidance;
     char input;
     int joystickInput;
     enum {
@@ -278,15 +350,6 @@ class RemoteControl
     void standardScheme(char);
     void manualControl(char);
     void joystickScheme(int);
-};
-
-class Avoidance {
-public:
-  void begin(Driver*, Sensors*);
-private:
-  Driver*  driver;
-  Sensors* sensors;
-  
 };
 
 #endif

@@ -1,10 +1,11 @@
 #include <AutonomousCarSystem.h>
 
-void RemoteControl::begin(Driver* driverRef, Parking* parkingRef, Sensors* sensorsRef)
+void RemoteControl::begin(Driver* driverRef, Parking* parkingRef, Sensors* sensorsRef, Avoidance* avoidanceRef)
 {
   driver  =  driverRef;
   parking = parkingRef;
   sensors = sensorsRef;
+  avoidance = avoidanceRef;
 }
 
 void RemoteControl::listen() {
@@ -53,10 +54,10 @@ void RemoteControl::standardScheme(char input) {
 
     case _AUX_1_ON  : break;
     case _AUX_1_OFF : break;
-    case _AUX_2_ON  : break;
-    case _AUX_2_OFF : break;
-    case _AUX_3_ON  : sensors -> sirenOn();  break;
-    case _AUX_3_OFF : sensors -> sirenOff(); break;
+    case _AUX_2_ON  : break; //avoidance -> startAvoidance(); break;
+    case _AUX_2_OFF : break; //avoidance -> stopAvoidance();  break;
+    case _AUX_3_ON  : sensors   -> sirenOn();        break;
+    case _AUX_3_OFF : sensors   -> sirenOff();       break;
 
     // Parking - Triangle
     case _AUX_4_ON  : parking -> initiate(); break;
