@@ -119,9 +119,10 @@ class Camera(mp.Process):
                     if(cv.countNonZero(mask) > s.area*0.3):
                         self.isParking = True
                         self.serial.write('X'.encode())
-                        print("blue square")
+                        print("blue square : PARKING")
                         while (self.isParking == True):
-                            if(serial.read() == 'x'.encode()):
+                            if(self.serial.read() == 'x'.encode()):
+                                print("NO LONGER PARKING")
                                 self.isParking = False
                                 
             #elif(s.shape == "square"):
@@ -140,9 +141,10 @@ class Camera(mp.Process):
                     if(cv.countNonZero(mask) > s.area*0.3):
                         self.isParking = True
                         self.serial.write('X'.encode())
-                        print("blue square")
+                        print("blue square : PARKING")
                         while (self.isParking == True):
-                            if(serial.read() == 'x'.encode()):
+                            if(self.serial.read() == 'x'.encode()):
+                                print("NO LONGER PARKING")
                                 self.isParking = False
                                 
             #elif(s.shape == "stop sign"):
