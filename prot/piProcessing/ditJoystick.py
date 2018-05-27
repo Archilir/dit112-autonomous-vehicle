@@ -89,10 +89,10 @@ class Joystick(mp.Process):
             if(not self.parking):
                 print("Parking start")
                 self.parking = True
-                self.serial.write(struct.pack('!B', 105))
+                self.serial.write('X'.encode())
             else:
                 print("Parking stop")
-                self.serial.write(struct.pack('!B', 106))
+                self.serial.write('x'.encode())
                 self.parking = False
             
         elif(button == Joystick.BUTTON_CROSS):
@@ -100,7 +100,7 @@ class Joystick(mp.Process):
             self.serial.write('S'.encode())
             #self.serial.write(struct.pack('!B', 101))
             if(self.parking):
-                self.serial.write(struct.pack('!B', 106))
+                self.serial.write('x'.encode())
                 self.parking = False
             
         elif(button == Joystick.BUTTON_CIRCLE):
@@ -111,7 +111,7 @@ class Joystick(mp.Process):
 
         elif(button == Joystick.BUTTON_L1):
             print("SIREN ON")
-            self.serial.write(struct.pack('!B', 103))
+            self.serial.write('V'.encode())
 
         elif(button == Joystick.BUTTON_R1):
             self.serial.write('X'.encode())
@@ -145,7 +145,7 @@ class Joystick(mp.Process):
 
     def buttonRelease(self, button):
         if(button == Joystick.BUTTON_SQUARE):
-            self.serial.write('X'.encode())
+            self.serial.write('z'.encode())
             
         elif(button == Joystick.BUTTON_CROSS):
             #self.serial.write(struct.pack('!B', 101))
@@ -160,7 +160,7 @@ class Joystick(mp.Process):
 
         elif(button == Joystick.BUTTON_L1):
             print("SIREN OFF")
-            self.serial.write(struct.pack('!B',104))
+            self.serial.write('v'.encode())
 
         elif(button == Joystick.BUTTON_R1):
             self.serial.write('X'.encode())

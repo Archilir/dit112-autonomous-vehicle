@@ -78,7 +78,7 @@ for frame in camera.capture_continuous(camera_array, format="bgr", use_video_por
 
                 #Call the method we made above to decide what the shape of a contour is
                 thishape = shape_compare(c)
-                if(cv.contourArea(c)>100):
+                if(cv.contourArea(c)>130):
                         cv.drawContours(img, [c], -1, (0, 255, 0), 2)
                 
                         cv.putText(img, thishape, (cX - 20, cY - 20),

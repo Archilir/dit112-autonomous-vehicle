@@ -12,9 +12,11 @@ import struct
 
 class ContourRectangle():
 
-    def __init__(self, shape, rectangle):
+    def __init__(self, shape, rectangle, area):
         self.shape = shape
         self.rectangle = rectangle
+        self.area = area
+        
         
 class Camera(mp.Process):
 
@@ -32,18 +34,25 @@ class Camera(mp.Process):
     lower_green = np.array([50, 100, 100])
     upper_green = np.array([70, 255, 255])
 
-    lower_blue = np.array([100, 99, 2])
-    upper_blue = np.array([120, 119, 82])
+    #lower_blue = np.array([99, 191, 78])
+    #upper_blue = np.array([119, 211, 158])
 
-    lower_red = np.array([82, 53, 179])
-    upper_red = np.array([102, 73, 259])
-                
+    lower_blue = np.array([90, 70, 40])
+    upper_blue = np.array([119, 210, 230])
+    
+    #lower_red = np.array([168, 158, 98])
+    #upper_red = np.array([188, 178, 178])
+
+    lower_red = np.array([72, 40, 30])
+    upper_red = np.array([102, 210, 230])
+    
     def __init__(self, serial):
         #mp.Process.__init__(self)
         self.serial = serial
         #Allow camera to start
         time.sleep(0.1)
         #self.processCamera()
+        self.isParking = False
 
     #A function to compare contour vertices to recognize the shape
     def shape_compare(self, c):
@@ -85,15 +94,15 @@ class Camera(mp.Process):
 
             #Call the method we made above to decide what the shape of a contour is
             thishape = self.shape_compare(c)
-            if(cv.contourArea(c)>130):
+            if(cv.contourArea(c)>230):
                 cv.drawContours(frame, [c], -1, (0, 255, 0), 2)
                         
                 cv.putText(frame, thishape, (cX - 20, cY - 20),
                 cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
                 if(thishape != "none"):
                     x, y, w, h = cv.boundingRect(c)
-                    roi = frame[y:y+h, x:x+h]
-                    lst.append(ContourRectangle(thishape, roi))
+                    roi = frame[y:y+h, x:x+w]
+                    lst.append(ContourRectangle(thishape, roi, w*h))
         return lst
     def detectColor(self, mask_green, mask_blue, mask_red, color):
         green = cv.countNonZero(mask_green)
@@ -103,32 +112,46 @@ class Camera(mp.Process):
 
     def detectSign(self, shapes, serial):
         for s in shapes:
-            if(s.shape == "triangle"):
-                hsv = cv.cvtColor(s.rectangle, cv.COLOR_BGR2HSV)
-                mask = cv.inRange(hsv, Camera.lower_blue, Camera.upper_blue)
-                if(cv.countNonZero(mask) > 140):
-                    self.serial.write(struct.pack('!B', 191))
-                    print("blue triangle")
-            elif(s.shape == "square"):
-                hsv = cv.cvtColor(s.rectangle, cv.COLOR_BGR2HSV)
-                mask = cv.inRange(hsv, Camera.lower_green, Camera.upper_green)
-                if(cv.countNonZero(mask) > 140):
-                    self.serial.write(struct.pack('!B', 192))
-                    print("green square")
+            if(s.shape == "square"):
+                if(not self.isParking):
+                    hsv = cv.cvtColor(s.rectangle, cv.COLOR_BGR2HSV)
+                    mask = cv.inRange(hsv, Camera.lower_blue, Camera.upper_blue)
+                    if(cv.countNonZero(mask) > s.area*0.3):
+                        self.isParking = True
+                        self.serial.write('X'.encode())
+                        print("blue square")
+                        while (self.isParking == True):
+                            if(serial.read() == 'x'.encode()):
+                                self.isParking = False
+                                
+            #elif(s.shape == "square"):
+            #    #if(not self.isParking):
+            #    hsv = cv.cvtColor(s.rectangle, cv.COLOR_BGR2HSV)
+            #    mask = cv.inRange(hsv, Camera.lower_green, Camera.upper_green)
+            #    if(cv.countNonZero(mask) > 140):
+            #        #self.isParking = True
+            #        self.serial.write('X'.encode())
+            #        print("green square")
             elif(s.shape == "rectangle"):
-                img_inv = cv.bitwise_not(s.rectangle)
-                hsv = cv.cvtColor(img_inv, cv.COLOR_BGR2HSV)
-                mask = cv.inRange(hsv, Camera.lower_red, Camera.upper_red)
-                if(cv.countNonZero(mask) > 140):
-                    self.serial.write(struct.pack('!B', 193))
-                    print("red rectangle")
-            else:
-                img_inv = cv.bitwise_not(s.rectangle)
-                hsv = cv.cvtColor(img_inv, cv.COLOR_BGR2HSV)
-                mask = cv.inRange(hsv, Camera.lower_red, Camera.upper_red)
-                if(cv.countNonZero(mask) > 140):
-                    self.serial.write(struct.pack('!B', 194))
-                    print("stop sign")
+                if(not self.isParking):
+                    img_inv = cv.bitwise_not(s.rectangle)
+                    hsv = cv.cvtColor(img_inv, cv.COLOR_BGR2HSV)
+                    mask = cv.inRange(hsv, Camera.lower_blue, Camera.upper_blue)
+                    if(cv.countNonZero(mask) > s.area*0.3):
+                        self.isParking = True
+                        self.serial.write('X'.encode())
+                        print("blue square")
+                        while (self.isParking == True):
+                            if(serial.read() == 'x'.encode()):
+                                self.isParking = False
+                                
+            #elif(s.shape == "stop sign"):
+            #    img_inv = cv.bitwise_not(s.rectangle)
+            #    hsv = cv.cvtColor(img_inv, cv.COLOR_BGR2HSV)
+            #    mask = cv.inRange(hsv, Camera.lower_red, Camera.upper_red)
+            #    if(cv.countNonZero(mask) > 140):
+            #        self.serial.write('S'.encode())
+            #        print("stop sign")
                 
                 
         
@@ -146,7 +169,7 @@ class Camera(mp.Process):
                 blurred = cv.GaussianBlur(gray, (5, 5), 0)
 
                 #A generic threshold to decide what we consider contours
-                thresh = cv.threshold(blurred, 128, 255, cv.THRESH_BINARY_INV)[1]
+                thresh = cv.threshold(blurred, 90, 255, cv.THRESH_BINARY_INV)[1]
 
                 #convert BGR to HSV
                 hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
@@ -173,7 +196,7 @@ class Camera(mp.Process):
                 
                 cv.imshow("Image", img)
                 #cv.imshow("Mask", res)
-                #cv.imshow("Threshold", thresh)
+                cv.imshow("Threshold", thresh)
                 self.camera_array.truncate(0)
                 key = cv.waitKey(1) & 0xFF
                 if key==ord("q"):
