@@ -168,8 +168,8 @@ void Parking::position() {
 }
 
 void Parking::measure() {
-  stop();
-  //changeState(_ALIGNING);
+
+  changeState(_ALIGNING);
 }
 
 void Parking::align() {
@@ -180,6 +180,7 @@ void Parking::align() {
 void Parking::stop() {
   driver  -> disableAutonomy();
   sensors -> disableMonitor();
+  Serial.write('x');
   changeState(_IDLING);
 }
 

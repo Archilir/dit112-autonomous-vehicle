@@ -5,9 +5,136 @@ void Avoidance::begin(Driver* driverReference, Sensors* sensorsReference) {
   sensors = sensorsReference;
 }
 
+void Avoidance::startAvoidance() {
+  driver -> enableAutonomy();
+  changeState(_start);
+}
+
+void Avoidance::stopAvoidance() {
+  driver -> disableAutonomy();
+  changeState(_idle);
+}
+
+bool Avoidance::isEnabled() {
+  return (state == _idle) ? true : false;
+}
+
 void Avoidance::changeState(char newState) {
   state = newState;
 }
+
+/*int Avoidance::getTurnDirection(int targetDegrees) {
+  targetDegrees %= 360;
+  return (targetDegrees > 0) ? 1 : -1;
+}*/
+
+
+
+void Avoidance::debug() {
+  Serial.println(sensors -> getDistanceMiddleSide());
+  Serial.println(initialDegree);
+}
+
+void Avoidance::monitor() {
+  //debug();
+  switch (state) {
+    /*
+    case _INIT         : init();              break;
+    case _FIRST_MOVE   : firstMove();         break;
+    case _CALCULATE    : calculateRotation(); break;
+    case _TRACK_ROTATE : trackRotation();     break;
+    case _MOVE         : moveVehicle();              break;
+    */
+    case _start       : inita();         break;
+    case _firstTurn   : firstTurn();     break;
+
+
+    case _thirdTurn   : thirdTurn();    break;
+    case _firstGo     : firstGo();      break;
+    case _firstAdjust : firstAdjust();  break;
+    case _secondGoPT  : secondGoPT();   break;
+    case _secondGo    : secondGo();     break;
+    case _secondTurn  : secondTurn();   break;
+    case _thirdAdjust : thirdAdjust();  break;
+    case _finish      : finish();       break;
+    case _jesus       : christ();       break;
+    case _secondAdjust: secondAdjust(); break;
+  }
+}
+
+/*
+void Car::initiate() {
+  targetDegrees = 0;
+  degreesTurnedSoFar = 0;
+  initialHeading = sensors -> getUnsyncAngularDisplacement();
+  rotationHeading = 0;
+  driver -> enableAutonomy();
+  changeState(_FIRST_MOVE);
+}
+
+void Car::firstMove() {
+  if (sensors -> getDistanceFront() < 10 &&
+      sensors -> getDistanceFrontSide() < 10)
+      driver -> stop();
+      delay(500);
+      targetDegrees = -90;
+      changeState(_CALCULATE);
+  else if (sensors -> getDistanceFront() < 10)
+      setMotorSpeed(0, 0);
+  else
+    setMotorSpeed(_MOVE_SPEED, _MOVE_SPEED);
+}
+
+void Car::calculateRotation(){
+    targetDegrees %= 360;
+    rotationHeading = sensors -> getUnsyncAngularDisplacement();
+    degreesTurnedSoFar = 0;
+    if (targetDegrees > 0){
+        setMotorSpeed(_TURN_SPEED, -_TURN_SPEED);
+    } else {
+        setMotorSpeed(-_TURN_SPEED, _TURN_SPEED);
+    }
+    changeState(_TRACK_ROTATE);
+}
+
+void Car::trackRotation() {
+   if (abs(degreesTurnedSoFar) < abs(targetDegrees)) {
+      int currentHeading = sensors -> getUnsyncAngularDisplacement();
+      if (targetDegrees < 0 && currentHeading > rotationHeading){
+              currentHeading -= 360;
+      }else if (targetDegrees > 0 && currentHeading < rotationHeading){
+              currentHeading += 360;
+      }
+      degreesTurnedSoFar = rotationHeading - currentHeading;
+  } else {
+  driver -> stop();
+  degreesTurnedSoFar = 0;
+  targetDegrees = 0;
+  initialHeading = 0;
+  delay(500);
+  setMotorSpeed(_MOVE_SPEED, _MOVE_SPEED);
+  changeState(_MOVE);
+  }
+}
+
+void Car::moveVehicle() {
+  driver -> drive(forwardSpeed);
+  if (sensors -> getDistanceFront() < 10 &&
+      sensors -> getDistanceFrontSide() < 10 &&
+      sensors -> getDistanceMiddleSide() < 10)
+      driver -> stop();
+      delay(500);
+      targetDegrees = ;
+      finalManeuver = true;
+      changeState(_)
+  if (sensors -> getDistanceMiddleSide() >= 15) {
+
+    driver -> stop();
+    delay(500);
+    changeState(_secondTurn);
+
+  }
+}*/
 
 void Avoidance::inita() {
   driver -> stop();
@@ -16,23 +143,20 @@ void Avoidance::inita() {
   changeState(_firstTurn);
 }
 
-
-
 void Avoidance::firstTurn() {
 
-  driver -> setMotorSpeed(-turnSpeed,turnSpeed);
+  driver -> setMotorSpeed(-_TURN_SPEED,_TURN_SPEED);
   if (initialDegree >= 90) {
     if (initialDegree == 90 &&
         sensors -> getUnsyncAngularDisplacement()<200 &&
         sensors -> getUnsyncAngularDisplacement()>0) {
-
           driver -> stop();
           FirstMeasure = FirstMeasure-90;
           changeState(_firstAdjust);
     }
     if (sensors -> getUnsyncAngularDisplacement() <= initialDegree - 90) {
       driver -> stop();
-      FirstMeasure = FirstMeasure-90;
+      FirstMeasure = FirstMeasure -90;
       changeState(_firstAdjust);
     }
   }
@@ -49,10 +173,10 @@ void Avoidance::firstTurn() {
 
 void Avoidance::firstAdjust() {
   if (FirstMeasure>sensors -> getUnsyncAngularDisplacement()) {
-    driver -> setMotorSpeed(turnSpeed,-turnSpeed);
+    driver -> setMotorSpeed(_TURN_SPEED,-_TURN_SPEED);
   }
   if (FirstMeasure<sensors -> getUnsyncAngularDisplacement()) {
-    driver -> setMotorSpeed(-turnSpeed,turnSpeed);
+    driver -> setMotorSpeed(-_TURN_SPEED,_TURN_SPEED);
   }
   if (FirstMeasure == sensors -> getUnsyncAngularDisplacement()     ||
       FirstMeasure == sensors -> getUnsyncAngularDisplacement() + 1 ||
@@ -74,9 +198,8 @@ void Avoidance::firstGo(){
 
 }
 
-
 void Avoidance::secondTurn() {
-  driver -> setMotorSpeed(turnSpeed,-turnSpeed);
+  driver -> setMotorSpeed(_TURN_SPEED,-_TURN_SPEED);
   if (initialDegree <= 90 &&
       sensors -> getUnsyncAngularDisplacement() < 200 &&
       sensors -> getUnsyncAngularDisplacement() > initialDegree) {
@@ -127,7 +250,7 @@ void Avoidance::secondGoPT() {
 }
 
 void Avoidance::thirdTurn() {
-  driver -> setMotorSpeed(turnSpeed,-turnSpeed);
+  driver -> setMotorSpeed(_TURN_SPEED,-_TURN_SPEED);
   if (initialDegree<270) {
     FirstMeasure = initialDegree+90;
   }
@@ -171,7 +294,7 @@ void Avoidance::christ() {
 }
 
 void Avoidance::finish() {
-  driver -> setMotorSpeed(-turnSpeed,turnSpeed);
+  driver -> setMotorSpeed(-_TURN_SPEED,_TURN_SPEED);
   if (FirstMeasure==90 &&
       sensors -> getUnsyncAngularDisplacement()>200 &&
       sensors -> getUnsyncAngularDisplacement()>initialDegree) {
@@ -186,52 +309,8 @@ void Avoidance::finish() {
   }
 }
 
-
-void Avoidance::debug() {
-  Serial.println(sensors -> getDistanceMiddleSide());
-  Serial.println(initialDegree);
-}
-
-
 void Avoidance::takeRead() {
   FirstMeasure = sensors -> getUnsyncAngularDisplacement();
-}
-
-void Avoidance::monitor() {
-  //debug();
-  switch (state) {
-    case _start       : inita();        break;
-    case _firstTurn   : firstTurn();    break;
-    case _thirdTurn   : thirdTurn();    break;
-    case _firstGo     : firstGo();      break;
-    case _firstAdjust : firstAdjust();  break;
-    case _secondGoPT  : secondGoPT();   break;
-    case _secondGo    : secondGo();     break;
-    case _secondTurn  : secondTurn();   break;
-    case _thirdAdjust : thirdAdjust();  break;
-    case _finish      : finish();       break;
-    case _jesus       : christ();       break;
-    case _secondAdjust: secondAdjust(); break;
-  }
-}
-
-void Avoidance::startAvoidance() {
-  driver -> enableAutonomy();
-  changeState(_start);
-}
-
-void Avoidance::stopAvoidance() {
-  driver -> disableAutonomy();
-  changeState(_idle);
-
-}
-
-bool Avoidance::isEnabled() {
-  if (state == _idle) {
-    return true;
-  } else {
-    return false;
-  }
 }
 
 // SonicA = Front

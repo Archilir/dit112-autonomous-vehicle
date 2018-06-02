@@ -9,8 +9,8 @@ void RemoteControl::begin(Driver* driverRef, Parking* parkingRef, Sensors* senso
 }
 
 void RemoteControl::listen() {
-  if (Serial3.available() || Serial.available()) {
-    if (Serial.available())
+  if (Serial3.available() || (listeningPi && Serial.available())) {
+    if (listeningPi && Serial.available())
       input = Serial.read();
     if (Serial3.available())
       input = Serial3.read();
@@ -52,8 +52,8 @@ void RemoteControl::standardScheme(char input) {
     case _SPEED_90  : driver -> setSpeed( 90); break;
     case _SPEED_100 : driver -> setSpeed(100); break;
 
-    case _AUX_1_ON  : break;
-    case _AUX_1_OFF : break;
+    case _AUX_1_ON  : Serial.write('x'); listeningPi = true; break;
+    case _AUX_1_OFF : listeningPi = false; break;
     case _AUX_2_ON  : break; //avoidance -> startAvoidance(); break;
     case _AUX_2_OFF : break; //avoidance -> stopAvoidance();  break;
     case _AUX_3_ON  : sensors   -> sirenOn();        break;

@@ -224,6 +224,12 @@ private:
   Driver*  driver;
   Sensors* sensors;
 
+  enum {
+    _MOVE_SPEED = 30,
+    _TURN_SPEED = 35,
+    _TURN_ANGLE = 90
+  };
+
   enum states{
 
     _idle,
@@ -262,7 +268,7 @@ private:
   int initialDegree;
   int firstTurnDegree;
   bool kys = true;
-  int turnSpeed = 35;
+  //const int _TURN_SPEED = 35;
   int adjustSpeed = 35;
   int forwardSpeed = 30;
 
@@ -294,6 +300,7 @@ class RemoteControl
     Parking *parking;
     Sensors *sensors;
     Avoidance *avoidance;
+    bool listeningPi = false;
     char input;
     int joystickInput;
     enum {
