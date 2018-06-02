@@ -4,7 +4,7 @@ The Autonomous Car System is a software package for a remote controlled, self-pa
 
 Features
 --------
--Modular system architecture through C++ written in PlatformIO
+-Modular system architecture through C++ written in PlatformIO  
 -Joystick and Image Recognition accomplished through Python  
 -Bash script to run the above in parallel
 
