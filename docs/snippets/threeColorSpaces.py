@@ -44,7 +44,7 @@ for frame in camera.capture_continuous(camera_array, format="bgr", use_video_por
     upper_green = np.array([70, 255, 255])
 
     lower_blue = np.array([90, 70, 40])
-    upper_blue = np.array([119, 210, 230])
+    upper_blue = np.array([122, 210, 230])
 
     lower_red = np.array([72, 40, 30])
     upper_red = np.array([102, 210, 230])
