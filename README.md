@@ -10,7 +10,7 @@ Features
 
 Installation
 ------------
-The Arduino software can be uploaded directly from a local copy of the repo onto an Arduino Mega board using Atom with the PlatformIO package. 
+The Arduino software can be uploaded directly from a local copy of the repo onto an Arduino Mega board using Atom with the PlatformIO package.  
 For the Image Recognition and Joystick functionalities, the files found in piProcessing should be copied onto a Raspberry Pi. The Pi should then be connected to the Arduino via USB. Finally, running the Bash script enables the functions.
 
 Contribute
