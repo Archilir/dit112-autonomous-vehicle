@@ -16,7 +16,7 @@ For the Image Recognition and Joystick functionalities, the files found in piPro
 Contribute
 ----------
 Link to Repository:
-https://github.com/ArchiCo/dit112-autonomous-vehicle
+https://github.com/Archilir/dit112-autonomous-vehicle
 
 Support
 -------
